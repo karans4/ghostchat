@@ -129,6 +129,15 @@ const STUN = [{urls:'stun:stun.l.google.com:19302'},{urls:'stun:stun1.l.google.c
 const ICE_TIMEOUT = 5000;
 const CHUNK_SIZE = 16384;
 const MSG_TTL = 2*24*3600*1000;
+// Fallback signaling servers — try in order, fastest wins
+const SIGNAL_SERVERS = [
+  'wss://ghost-signal.notruefireman.org',  // Cloudflare Worker (edge)
+  'wss://ghost-fly.fly.dev',               // Fly.io (edge)
+  'wss://signal.notruefireman.org:8443',   // Your server (backup)
+];
+
+// QR Fallback: visual handshake, no servers
+// Both cameras active, exchange offer/answer via QR automatically
 
 // ============ STATE ============
 const S = {
@@ -537,27 +546,284 @@ function showHome(){
         <button class="primary" id="btn-create">Create Room</button>
         <button id="btn-join">Join Room</button>
       </div>
+      <div style="margin-top:16px;text-align:center">
+        <button id="btn-qr-mode" style="background:none;border:none;color:var(--dim);font-size:11px;cursor:pointer">
+          Use QR Code (offline)
+        </button>
+      </div>
     </div></div>`;
   $('btn-create').onclick=doCreate;
   $('btn-join').onclick=()=>showJoinInput();
+  $('btn-qr-mode').onclick=doCreateWithQRFallback;
 }
 
-// ============ UNIFIED INVITE SYSTEM ============
-// One QR code contains everything: roomId, key, and offer SDP
-// Format: G:<base64url(compressed_json)>
-// JSON: {r: roomId, k: key, o: offerSDP, n: hostNick}
+// ============ WEBSOCKET SIGNALING ============
+// Uses Cloudflare Worker for SDP exchange, then WebRTC takes over
 
-async function makeInvite(roomId, keyStr, offerSDP, nick){
-  const data = JSON.stringify({r: roomId, k: keyStr, o: offerSDP, n: nick});
-  const compressed = await compressSDP(data); // reuse compression
-  return 'G:' + compressed;
+let ws = null;
+let wsQueue = [];
+
+function connectSignaling(roomId, onMessage) {
+  tryServer(0);
+
+  function tryServer(index) {
+    if (index >= SIGNAL_SERVERS.length) {
+      console.error('[signal] all servers failed');
+      toast('Signaling unavailable. Try QR code mode.');
+      return;
+    }
+
+    const url = `${SIGNAL_SERVERS[index]}?room=${encodeURIComponent(roomId)}`;
+    console.log(`[signal] trying ${SIGNAL_SERVERS[index]}`);
+
+    ws = new WebSocket(url);
+    let connected = false;
+
+    // Timeout for this attempt
+    const timeout = setTimeout(() => {
+      if (!connected) {
+        console.log(`[signal] ${SIGNAL_SERVERS[index]} timeout, trying next`);
+        ws.close();
+        tryServer(index + 1);
+      }
+    }, 3000);
+
+    ws.onopen = () => {
+      connected = true;
+      clearTimeout(timeout);
+      console.log(`[signal] connected to ${SIGNAL_SERVERS[index]}`);
+
+      // Flush queued messages
+      while (wsQueue.length > 0 && ws.readyState === WebSocket.OPEN) {
+        ws.send(JSON.stringify(wsQueue.shift()));
+      }
+    };
+
+    ws.onmessage = (e) => {
+      try {
+        const msg = JSON.parse(e.data);
+        onMessage(msg);
+      } catch (err) {}
+    };
+
+    ws.onclose = () => {
+      if (!connected) return; // Already handled by timeout
+      console.log('[signal] disconnected');
+      ws = null;
+      // Try to reconnect to same server or fallback
+      setTimeout(() => tryServer(index), 1000);
+    };
+
+    ws.onerror = () => {
+      // Let timeout handle it
+    };
+  }
 }
 
-async function parseInvite(inviteCode){
-  if(!inviteCode.startsWith('G:')) throw new Error('Invalid invite code');
-  const data = await decompressSDP(inviteCode.slice(2));
-  return JSON.parse(data);
+  ws.onopen = () => {
+    console.log('[signal] connected');
+    // Flush queued messages
+    while (wsQueue.length > 0 && ws.readyState === WebSocket.OPEN) {
+      ws.send(JSON.stringify(wsQueue.shift()));
+    }
+  };
+
+  ws.onmessage = (e) => {
+    try {
+      const msg = JSON.parse(e.data);
+      onMessage(msg);
+    } catch (err) {}
+  };
+
+  ws.onclose = () => {
+    console.log('[signal] disconnected');
+    ws = null;
+  };
+
+  ws.onerror = (e) => {
+    console.error('[signal] error', e);
+  };
 }
+
+function signalSend(msg) {
+  if (ws && ws.readyState === WebSocket.OPEN) {
+    ws.send(JSON.stringify(msg));
+  } else {
+    wsQueue.push(msg);
+  }
+}
+
+// ============ QR FALLBACK (Serverless) ============
+// When signaling fails, use visual handshake:
+// 1. Host shows offer QR
+// 2. Phone scans, generates answer, shows answer QR
+// 3. Host scans answer, connects
+// All automatic, user just holds phones facing each other
+
+async function doCreateWithQRFallback() {
+  S.nick = $('nick-in').value.trim() || 'ghost-' + rnd(2);
+  localStorage.setItem('ghost-nick', S.nick);
+  S.roomId = rnd(4);
+  S.roomKey = await genKey();
+  S.isAdmin = true;
+  const keyStr = await expKey(S.roomKey);
+  history.replaceState(null, '', '#' + S.roomId + '.' + keyStr);
+  saveRoomState();
+
+  // Generate offer
+  const { pc, dc, code } = await createOffer();
+  const offerSDP = code.slice(2);
+  S.pendingOffer = { pc, dc, offerSDP };
+
+  // Show offer QR
+  const shareUrl = location.origin + location.pathname + '#' + S.roomId + '.' + keyStr;
+  $('app').innerHTML = `
+    <div class="center"><div class="box">
+      <h1>Scan to Connect</h1>
+      <p style="color:var(--dim);font-size:12px;margin-bottom:16px">Hold phones facing each other</p>
+      <div id="offer-qr" style="text-align:center;margin:16px 0"></div>
+      <div id="scan-answer" style="text-align:center;margin:16px 0;display:none">
+        <p style="color:var(--dim);font-size:12px">Scanning for response...</p>
+        <div id="answer-scanner"></div>
+      </div>
+      <div class="status" id="conn-status"><span class="dot"></span> waiting for peer</div>
+      <div class="actions"><button id="btn-cancel">Cancel</button></div>
+    </div></div>`;
+
+  $('offer-qr').innerHTML = '<div class="qr-wrap" style="padding:16px">' + makeQR('O:' + offerSDP, 4) + '</div>';
+  $('btn-cancel').onclick = () => { S.pendingOffer = null; showHome(); };
+
+  // Start scanning for answer QR automatically
+  startAnswerScanner();
+}
+
+async function startAnswerScanner() {
+  if (!S.pendingOffer) return;
+
+  $('scan-answer').style.display = 'block';
+
+  // Try to detect answer QR from peer
+  const scan = await startQRScanner(null);
+  if (!scan) {
+    $('conn-status').innerHTML = '<span class="dot"></span> camera error';
+    return;
+  }
+
+  $('answer-scanner').appendChild(scan.video);
+
+  // Poll for answer code
+  const checkInterval = setInterval(async () => {
+    if (!S.pendingOffer) {
+      clearInterval(checkInterval);
+      scan.stop();
+      return;
+    }
+
+    // Use BarcodeDetector if available
+    if ('BarcodeDetector' in window) {
+      try {
+        const detector = new BarcodeDetector({ formats: ['qr_code'] });
+        const codes = await detector.detect(scan.video);
+        for (const code of codes) {
+          const val = code.rawValue;
+          if (val && val.startsWith('A:')) {
+            clearInterval(checkInterval);
+            scan.stop();
+            await handleAnswerQR(val);
+            return;
+          }
+        }
+      } catch (e) {}
+    }
+  }, 500);
+}
+
+async function handleAnswerQR(answerCode) {
+  if (!S.pendingOffer) return;
+
+  const { pc, dc } = S.pendingOffer;
+  const sdp = await decompressSDP(answerCode.slice(2));
+  await acceptAnswer(pc, sdp);
+
+  const peerId = crypto.randomUUID();
+  setupDC(peerId, dc);
+  addPeer(peerId, pc, dc, null);
+
+  S.pendingOffer = null;
+  $('conn-status').innerHTML = '<span class="dot"></span> connecting...';
+}
+
+async function doJoinWithQR(roomId, keyStr) {
+  S.nick = S.nick || localStorage.getItem('ghost-nick') || ('ghost-' + rnd(2));
+  localStorage.setItem('ghost-nick', S.nick);
+  S.roomId = roomId;
+  S.roomKey = await impKey(keyStr);
+  saveRoomState();
+
+  $('app').innerHTML = `
+    <div class="center"><div class="box">
+      <h1>Connecting...</h1>
+      <p style="color:var(--dim);font-size:12px">Scan the host's QR code</p>
+      <div id="host-scanner" style="margin:16px 0"></div>
+      <div id="answer-qr" style="text-align:center;margin:16px 0;display:none"></div>
+      <div class="status" id="conn-status"><span class="dot"></span> scanning...</div>
+      <div class="actions"><button id="btn-cancel">Cancel</button></div>
+    </div></div>`;
+
+  $('btn-cancel').onclick = showHome;
+
+  // Scan for host's offer
+  const scan = await startQRScanner(null);
+  if (!scan) {
+    $('conn-status').innerHTML = '<span class="dot"></span> camera error';
+    return;
+  }
+
+  $('host-scanner').appendChild(scan.video);
+
+  const detector = 'BarcodeDetector' in window ? new BarcodeDetector({ formats: ['qr_code'] }) : null;
+  let found = false;
+
+  const check = async () => {
+    if (found) return;
+
+    if (detector) {
+      try {
+        const codes = await detector.detect(scan.video);
+        for (const code of codes) {
+          const val = code.rawValue;
+          if (val && val.startsWith('O:')) {
+            found = true;
+            scan.stop();
+            $('host-scanner').style.display = 'none';
+            await handleHostOfferQR(val);
+            return;
+          }
+        }
+      } catch (e) {}
+    }
+    requestAnimationFrame(check);
+  };
+  check();
+}
+
+async function handleHostOfferQR(offerCode) {
+  const sdp = await decompressSDP(offerCode.slice(2));
+  const { pc, code, dcPromise } = await acceptOffer(sdp);
+
+  // Show answer QR immediately
+  $('answer-qr').style.display = 'block';
+  $('answer-qr').innerHTML = '<div class="qr-wrap" style="padding:12px">' + makeQR(code, 3) + '</div>';
+  $('conn-status').innerHTML = '<span class="dot"></span> show this QR to host';
+
+  const peerId = crypto.randomUUID();
+  const dc = await dcPromise;
+  setupDC(peerId, dc);
+  addPeer(peerId, pc, dc, null);
+}
+
+// ============ SIMPLIFIED FLOW ============
+// Host creates room -> QR with URL only -> Phone scans -> Both use WebSocket to exchange SDP
 
 async function doCreate(){
   S.nick=$('nick-in').value.trim()||'ghost-'+rnd(2);
@@ -569,42 +835,50 @@ async function doCreate(){
   history.replaceState(null,'','#'+S.roomId+'.'+keyStr);
   saveRoomState();
 
-  // Generate offer first
-  const{pc,dc,code:offerCode}=await createOffer();
-  const offerSDP = offerCode.slice(2); // remove 'O:' prefix
-
-  // Create unified invite
-  const inviteCode = await makeInvite(S.roomId, keyStr, offerSDP, S.nick);
+  // Show QR with just the URL
+  const shareUrl = location.origin + location.pathname + '#' + S.roomId + '.' + keyStr;
 
   $('app').innerHTML=`
     <div class="center"><div class="box">
       <h1>Room Ready</h1>
-      <p style="color:var(--dim);font-size:12px;margin-bottom:16px">Scan this QR to join instantly. No code exchange needed.</p>
+      <p style="color:var(--dim);font-size:12px;margin-bottom:16px">Scan to join, or share the link</p>
       <div id="invite-qr" style="text-align:center;margin:16px 0"></div>
       <div class="link-box" style="margin-top:12px"><span id="room-link"></span><button id="btn-copy-link">copy</button></div>
-      <div class="actions" style="margin-top:16px">
-        <button id="btn-scan-back">Scan Response</button>
-        <button class="primary" id="btn-enter-code">Enter Code</button>
-      </div>
-      <div class="status" id="conn-status"><span class="dot"></span> waiting for peer</div>
+      <div class="status" id="conn-status" style="margin-top:16px"><span class="dot"></span> waiting for peer</div>
     </div></div>`;
 
   // Show QR
-  $('invite-qr').innerHTML='<div class="qr-wrap" style="padding:16px">'+makeQR(inviteCode,3)+'</div>';
-
-  // Also show link
-  const shareUrl = location.origin + location.pathname + '#' + S.roomId + '.' + keyStr;
+  $('invite-qr').innerHTML='<div class="qr-wrap" style="padding:16px">'+makeQR(shareUrl,4)+'</div>';
   $('room-link').textContent = shareUrl;
   $('btn-copy-link').onclick = () => {navigator.clipboard.writeText(shareUrl); toast('Link copied')};
 
-  // Setup peer
-  const peerId = crypto.randomUUID();
-  setupDC(peerId, dc);
-  addPeer(peerId, pc, dc, null);
+  // Connect to signaling server
+  connectSignaling(S.roomId, async (msg) => {
+    if (msg.type === 'join') {
+      // A peer joined, send them our offer
+      const {pc, dc, code} = await createOffer();
+      S.pendingPC = {pc, dc, code};
 
-  // Alternative: scan peer's answer QR (for camera-to-camera)
-  $('btn-scan-back').onclick = () => showScanAnswer(pc);
-  $('btn-enter-code').onclick = () => showEnterAnswer(pc);
+      // Store for when answer comes back
+      S.pendingPC.pc = pc;
+      S.pendingPC.dc = dc;
+
+      signalSend({type: 'offer', sdp: code.slice(2)});
+
+      $('conn-status').innerHTML = '<span class="dot"></span> peer found, sending offer...';
+    }
+    else if (msg.type === 'answer' && S.pendingPC) {
+      // Got answer back
+      await acceptAnswer(S.pendingPC.pc, msg.sdp);
+
+      const peerId = crypto.randomUUID();
+      setupDC(peerId, S.pendingPC.dc);
+      addPeer(peerId, S.pendingPC.pc, S.pendingPC.dc, null);
+
+      $('conn-status').innerHTML = '<span class="dot"></span> connecting...';
+      S.pendingPC = null;
+    }
+  });
 
   // Load history
   const old = await loadMessages();
@@ -664,14 +938,14 @@ function showJoinInput(){
   $('app').innerHTML=`
     <div class="center"><div class="box">
       <h1>Join Room</h1>
-      <p style="color:var(--dim);font-size:12px;margin-bottom:16px">Scan a QR code or paste an invite link</p>
+      <p style="color:var(--dim);font-size:12px;margin-bottom:16px">Scan QR or paste room link</p>
       <label>Nickname</label>
       <input id="nick-in" value="${esc(stored)}" maxlength="20" spellcheck="false">
       <div id="scanner-mount" style="margin:16px 0;text-align:center">
         <button id="btn-scan-invite" class="scan-btn primary" style="padding:12px 24px">Scan QR Code</button>
       </div>
       <div class="code-box" style="margin-top:12px">
-        <textarea id="invite-input" rows="2" placeholder="Or paste invite code / link here..."></textarea>
+        <textarea id="invite-input" rows="2" placeholder="Or paste room link here..."></textarea>
       </div>
       <div class="actions"><button class="primary" id="btn-join">Join</button><button id="btn-back">Back</button></div>
     </div></div>`;
@@ -679,16 +953,29 @@ function showJoinInput(){
   $('btn-back').onclick=showHome;
 
   $('btn-scan-invite').onclick=async()=>{
-    const res=await startQRScanner(null);
+    const res=await startQRScanner($('invite-input'));
     if(res){
       $('scanner-mount').innerHTML='';
       $('scanner-mount').appendChild(res.video);
-      // Poll for QR result
+      // Auto-join when QR detected
       const check=setInterval(()=>{
-        const codes=document.querySelectorAll('#invite-input');
-        if(codes.length&&codes[0].value.startsWith('G:')){
+        const val=$('invite-input').value;
+        if(!val)return;
+
+        if(val.includes('#')){
+          // URL-based join
           clearInterval(check);
-          handleJoin(codes[0].value);
+          res.stop();
+          handleJoin(val);
+        }else if(val.startsWith('O:')){
+          // Direct QR offer (offline mode)
+          clearInterval(check);
+          res.stop();
+          const hash=location.hash.slice(1);
+          const[roomId,keyStr]=hash.split('.');
+          if(roomId&&keyStr){
+            doJoinWithQR(roomId,keyStr);
+          }
         }
       },500);
     }
@@ -698,44 +985,61 @@ function showJoinInput(){
 }
 
 async function handleJoin(input){
-  if(!input){toast('Enter an invite code or link');return}
+  if(!input){toast('Enter a room link');return}
 
-  let inviteData=null;
+  // Extract room from URL
+  let roomId=null, keyStr=null;
 
-  // Try unified invite code first (G:...)
-  if(input.startsWith('G:')){
-    try{
-      inviteData=await parseInvite(input);
-    }catch(e){toast('Invalid invite code');return}
-  }
-  // Try URL with hash
-  else if(input.includes('#')){
+  if(input.includes('#')){
     const hash=input.split('#')[1];
-    const[rid,key]=hash.split('.');
-    if(rid&&key){
-      S.nick=$('nick-in').value.trim()||'ghost-'+rnd(2);
-      localStorage.setItem('ghost-nick',S.nick);
-      location.hash=hash;
-      doJoin(rid,key);
-      return;
+    const parts=hash.split('.');
+    if(parts.length===2){
+      roomId=parts[0];
+      keyStr=parts[1];
     }
   }
-  // Try old offer code (O:...) - deprecated but support it
-  else if(input.startsWith('O:')){
-    toast('Use the new invite QR code (starts with G:)');
-    return;
-  }
-  else{
-    toast('Invalid invite. Use a QR code or link.');
-    return;
-  }
 
-  // Process unified invite
-  if(inviteData){
-    S.nick=$('nick-in').value.trim()||'ghost-'+rnd(2);
-    localStorage.setItem('ghost-nick',S.nick);
-    await doJoinWithOffer(inviteData);
-  }
+  if(!roomId||!keyStr){toast('Invalid room link');return}
+
+  S.nick=$('nick-in').value.trim()||'ghost-'+rnd(2);
+  localStorage.setItem('ghost-nick',S.nick);
+  S.roomId=roomId;
+  S.roomKey=await impKey(keyStr);
+  location.hash=roomId+'.'+keyStr;
+  saveRoomState();
+
+  // Show connecting UI
+  $('app').innerHTML=`
+    <div class="center"><div class="box">
+      <h1>Joining...</h1>
+      <p>Room: ${esc(roomId)}</p>
+      <div class="status" style="margin-top:16px"><span class="dot"></span> connecting to signaling...</div>
+    </div></div>`;
+
+  // Connect to signaling and wait for host
+  connectSignaling(roomId, async (msg) => {
+    if(msg.type==='peers'&&msg.count>=1){
+      $('conn-status')?.textContent='found peer, exchanging keys...';
+    }
+    else if(msg.type==='offer'){
+      // Got offer from host, create answer
+      const{pc,code,dcPromise}=await acceptOffer(msg.sdp);
+
+      signalSend({type:'answer',sdp:code.slice(2)});
+
+      const peerId=crypto.randomUUID();
+      const dc=await dcPromise;
+      setupDC(peerId,dc);
+      addPeer(peerId,pc,dc,null);
+    }
+  });
+
+  // Signal that we joined
+  setTimeout(()=>signalSend({type:'join'}),500);
+
+  // Load history
+  const old=await loadMessages();
+  if(old.length)S.messages=old.filter(m=>m.ts>Date.now()-MSG_TTL);
 }
 
 async function doJoinWithOffer(invite){
