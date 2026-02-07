@@ -40,6 +40,9 @@ button.secondary:hover{border-color:var(--acc)}
 <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js"></script>
 <script>
 const STUN=[{urls:'stun:stun.l.google.com:19302'},{urls:'stun:stun1.l.google.com:19302'}];
+// Optional signaling for automatic answer relay
+const SIGNAL_SERVER='wss://signal.notruefireman.org:8443';
+let ws=null;
 const S={pc:null,dc:null,key:null,room:null,nick:null,myId:crypto.randomUUID()};
 const $=id=>document.getElementById(id);
 const rnd=(n=4)=>[...crypto.getRandomValues(new Uint8Array(n))].map(b=>b.toString(16).padStart(2,'0')).join('');
@@ -83,9 +86,13 @@ async function doCreate(){
   const code='G:'+S.room+'.'+keyStr+'.'+await compress(pc.localDescription.sdp);
   S.pc=pc;
 
+  // Try to listen for answer via signaling
+  trySignalListen(S.room);
+
   $('app').innerHTML=`<div class="center"><div class="box">
     <h1>Share This Code</h1>
     <p>Send to the other person any way you want.</p>
+    <div id="signal-status" style="color:var(--dim);font-size:12px;margin-bottom:8px">Checking signal server...</div>
     <div class="qr-wrap" id="qr"></div>
     <div class="code-box" id="code"></div>
     <button onclick="copyCode()">Copy</button>
@@ -93,14 +100,18 @@ async function doCreate(){
   </div></div>`;
 
   $('code').textContent=code;
-  // Truncate display if too long
   if(code.length>200){
     $('code').textContent=code.slice(0,100)+'...'+code.slice(-50)+'\n('+code.length+' chars - use copy button)';
   }
-  // Smaller QR
   const qr=qrcode(0,'L');qr.addData(code);qr.make();
   $('qr').innerHTML=qr.createSvgTag({cellSize:2,margin:1});
   window.currentCode=code;
+
+  // Update signal status after check
+  setTimeout(()=>{
+    const ss=$('signal-status');
+    if(ss)ss.textContent=ws?.readyState===1?'Signal server active (auto-connect enabled)':'Signal blocked (manual code required)';
+  },2000);
 }
 
 function copyCode(){navigator.clipboard.writeText(window.currentCode);}
@@ -141,22 +152,59 @@ async function doJoin(){
   S.pc=pc;
   const answerCode='A:'+await compress(pc.localDescription.sdp);
 
-  $('app').innerHTML=`<div class="center"><div class="box">
-    <h1>Show This Back</h1>
-    <p>They need to scan or paste this to complete.</p>
-    <div class="qr-wrap" id="qr"></div>
-    <div class="code-box" id="code"></div>
-    <button onclick="copyCode()">Copy</button>
-  </div></div>`;
+  // Try signaling first, fallback to manual QR
+  const signalSuccess=await trySignalAnswer(S.room,answerCode);
 
-  $('code').textContent=answerCode;
-  window.currentCode=answerCode;
-  // Smaller QR for answer too
-  const qr=qrcode(0,'L');qr.addData(answerCode);qr.make();
-  $('qr').innerHTML=qr.createSvgTag({cellSize:2,margin:1});
+  if(signalSuccess){
+    $('app').innerHTML=`<div class="center"><div class="box">
+      <h1>Connecting...</h1>
+      <p>Signal server relaying answer. One moment...</p>
+      <div class="status"><span class="dot"></span> waiting for host</div>
+    </div></div>`;
+  }else{
+    $('app').innerHTML=`<div class="center"><div class="box">
+      <h1>Show This Back</h1>
+      <p>Signal blocked. Show them this code manually.</p>
+      <div class="qr-wrap" id="qr"></div>
+      <div class="code-box" id="code"></div>
+      <button onclick="copyCode()">Copy</button>
+    </div></div>`;
+
+    $('code').textContent=answerCode;
+    window.currentCode=answerCode;
+    const qr=qrcode(0,'L');qr.addData(answerCode);qr.make();
+    $('qr').innerHTML=qr.createSvgTag({cellSize:2,margin:1});
+  }
 
   const dc=await dcPromise;
   setupDC(dc);
+}
+
+async function trySignalAnswer(room,answerCode){
+  return new Promise(resolve=>{
+    try{
+      ws=new WebSocket(`${SIGNAL_SERVER}?room=${room}&role=answer`);
+      ws.onopen=()=>{
+        ws.send(JSON.stringify({type:'answer',sdp:answerCode.slice(2)}));
+        resolve(true);
+      };
+      ws.onerror=()=>resolve(false);
+      ws.onclose=()=>resolve(false);
+      setTimeout(()=>resolve(false),3000);
+    }catch(e){resolve(false);}
+  });
+}
+
+async function trySignalListen(room,onAnswer){
+  try{
+    ws=new WebSocket(`${SIGNAL_SERVER}?room=${room}&role=offer`);
+    ws.onmessage=async(e)=>{
+      const msg=JSON.parse(e.data);
+      if(msg.type==='answer'){
+        await S.pc.setRemoteDescription({type:'answer',sdp:await decompress(msg.sdp)});
+      }
+    };
+  }catch(e){/*ignore, use manual*/}
 }
 
 function showAnswer(){
