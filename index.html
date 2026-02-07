@@ -723,8 +723,8 @@ async function doCreate(){
   $('qr').innerHTML=qr.createSvgTag({cellSize:3,margin:1});
 }
 
-function showJoin(){
-  S.nick=$('nick-in').value.trim()||'Ghost'+rnd(2);
+function showJoin(prefillCode){
+  S.nick=Storage.get('nick')||'Ghost'+rnd(2);
   Storage.set('nick',S.nick);
   $('app').innerHTML=`<div class="center"><div class="card">
     <div class="logo">🔑</div>
@@ -734,7 +734,12 @@ function showJoin(){
     <button class="btn btn-primary" onclick="doJoin()">Connect</button>
     <button class="btn btn-secondary" onclick="showHome()">Back</button>
   </div></div>`;
-  $('code-in').focus();
+  if(prefillCode){
+    $('code-in').value=prefillCode;
+    doJoin();
+  }else{
+    $('code-in').focus();
+  }
 }
 
 async function doJoin(){
@@ -1296,6 +1301,7 @@ function checkUrlHash(){
   if(hash.startsWith('A=')){
     // Answer code for admin
     const code=decodeURIComponent(hash.slice(2));
+    showHome();
     setTimeout(()=>{
       showAnswer();
       $('ans-in').value=code;
@@ -1305,10 +1311,7 @@ function checkUrlHash(){
     // Invite code for joiner
     const code=decodeURIComponent(hash);
     if(code.startsWith('G:')){
-      setTimeout(()=>{
-        showJoin();
-        $('code-in').value=code;
-      },100);
+      showJoin(code);
       return true;
     }
   }
