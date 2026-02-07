@@ -198,24 +198,11 @@ input::placeholder,textarea::placeholder{color:var(--text-secondary)}
   padding:20px;
   display:inline-block;
   margin:16px 0;
-  box-shadow:0 8px 32px rgba(0,0,0,0.3);
-  text-decoration:none;
-  cursor:pointer
+  box-shadow:0 8px 32px rgba(0,0,0,0.3)
 }
 
-.qr-wrap:hover{
-  transform:scale(1.02);
-  box-shadow:0 12px 40px rgba(0,0,0,0.4)
-}
 
-a.code-box{
-  display:block;
-  color:var(--accent);
-  text-decoration:none;
-  cursor:pointer
-}
-
-a.code-box:hover{
+.code-box:hover{
   border-color:var(--accent)
 }
 
@@ -708,22 +695,24 @@ async function doCreate(){
 
   saveSession();
 
+  window.currentLink=link;
+  window.currentCode=code;
+
   $('app').innerHTML=`<div class="center"><div class="card">
     <div class="logo admin">👑</div>
-    <h1>Admin Room Created</h1>
-    <p class="subtitle">Share this invite link.<br>Expires in 24 hours.</p>
-    <a href="${link}" class="qr-wrap" id="qr" title="Click or scan to join"></a>
-    <a href="${link}" class="code-box" id="code"></a>
-    <button class="btn btn-primary" onclick="copyLink()">Copy Link</button>
+    <h1>Room Created</h1>
+    <p class="subtitle">Share this code to invite others.<br>Expires in 24 hours.</p>
+    <div class="code-box" id="code" style="font-size:11px;max-height:200px">${code}</div>
+    <div style="display:flex;gap:12px">
+      <button class="btn btn-primary" style="flex:1;margin-top:0" onclick="copyCode()">Copy Code</button>
+      <button class="btn btn-secondary" style="flex:1;margin-top:0" onclick="showQR()">📱 Share QR</button>
+    </div>
+    <hr style="border:0;border-top:1px solid var(--border);margin:24px 0">
+
+    <p class="subtitle" style="margin-bottom:16px">Waiting for someone to join...</p>
     <button class="btn btn-secondary" onclick="showAnswer()">Enter Reply Code</button>
     <button class="btn btn-secondary" onclick="showHome()">Back</button>
   </div></div>`;
-
-  $('code').textContent=link;
-  window.currentLink=link;
-  window.currentCode=code;
-  const qr=qrcode(0,'L');qr.addData(link);qr.make();
-  $('qr').innerHTML=qr.createSvgTag({cellSize:3,margin:1});
 }
 
 function showJoin(prefillCode){
@@ -775,21 +764,18 @@ async function doJoin(){
   const link=baseUrl+'#A='+encodeURIComponent(answerCode);
 
   saveSession();
+  window.currentCode=answerCode;
 
   $('app').innerHTML=`<div class="center"><div class="card">
     <div class="logo">✉️</div>
     <h1>Send Reply</h1>
-    <p class="subtitle">Give this back to the admin.</p>
-    <a href="${link}" class="qr-wrap" id="qr" title="Click or scan"></a>
-    <a href="${link}" class="code-box" id="code"></a>
-    <button class="btn btn-primary" onclick="copyLink()">Copy Link</button>
+    <p class="subtitle">Give this code back to the admin.</p>
+    <div class="code-box" id="code" style="font-size:11px">${answerCode}</div>
+    <div style="display:flex;gap:12px">
+      <button class="btn btn-primary" style="flex:1;margin-top:0" onclick="copyCode()">Copy Code</button>
+      <button class="btn btn-secondary" style="flex:1;margin-top:0" onclick="showQR()">📱 Show QR</button>
+    </div>
   </div></div>`;
-
-  $('code').textContent=link;
-  window.currentLink=link;
-  window.currentCode=answerCode;
-  const qr=qrcode(0,'L');qr.addData(link);qr.make();
-  $('qr').innerHTML=qr.createSvgTag({cellSize:3,margin:1});
 
   const dc=await dcPromise;
   setupDC(dc,false);
@@ -827,8 +813,38 @@ async function waitICE(pc){
   });
 }
 
-function copyCode(){navigator.clipboard.writeText(window.currentCode);const btn=document.querySelector('.btn-primary');btn.textContent='Copied!';setTimeout(()=>btn.textContent='Copy Code',2000);}
-function copyLink(){navigator.clipboard.writeText(window.currentLink);const btn=document.querySelector('.btn-primary');btn.textContent='Copied!';setTimeout(()=>btn.textContent='Copy Link',2000);}
+function copyCode(){
+  const code = window.currentCode;
+  if (!code) return;
+  navigator.clipboard.writeText(code);
+  const btn = document.querySelector('.btn-primary');
+  const original = btn.textContent;
+  btn.textContent = 'Copied!';
+  setTimeout(() => btn.textContent = original, 2000);
+}
+
+function showQR(){
+  const baseUrl = location.origin + location.pathname;
+  const link = baseUrl + '#' + encodeURIComponent(window.currentCode);
+
+  const modal = $('modal-content');
+  $('modal-overlay').classList.add('active');
+  modal.innerHTML = `
+    <h3>Scan to Join</h3>
+    <div class="qr-wrap" id="modal-qr" style="margin:24px auto"></div>
+    <p style="font-size:12px;word-break:break-all;color:var(--text-secondary)">${link}</p>
+    <button class="btn btn-primary" onclick="closeModal()" style="margin-top:16px">Close</button>
+  `;
+
+  const qr = qrcode(0, 'L');
+  qr.addData(link);
+  qr.make();
+  $('modal-qr').innerHTML = qr.createSvgTag({cellSize: 4, margin: 1});
+}
+
+function closeModal(){
+  $('modal-overlay').classList.remove('active');
+}
 
 // ============== CHAT UI ==============
 function showChat(){
