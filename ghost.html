@@ -97,6 +97,8 @@ const S = {
   messages: [],           // chat history
   pendingPCs: new Map(),  // peerId -> {pc, role}
   files: new Map(),       // fileId -> {meta, chunks[], done}
+  typing: new Set(),      // peerIds currently typing
+  typingTimer: null,      // debounce timer for typing events
 };
 
 // ============ UTIL ============
@@ -229,6 +231,8 @@ function onDisconnected(peerId){
   const nick=peer.nick;
   peer.pc.close();
   S.peers.delete(peerId);
+  S.typing.delete(peerId); // clear typing status
+  updateTypingIndicator();
   addSysMsg(`${nick} left`);
   updateChatUI();
 }
@@ -314,6 +318,9 @@ function handleMsg(fromPeer,msg){
       const p2=S.peers.get(fromPeer);
       if(p2)p2.nick=msg.nick;
       updateChatUI();
+      break;
+    case 'typing':
+      handleTyping(fromPeer, msg.typing);
       break;
   }
 }
@@ -677,6 +684,7 @@ function showChat(){
         ${S.isAdmin?'<button class="danger" id="btn-destroy" title="Destroy room">destroy</button>':''}
       </div>
       <div id="messages"></div>
+      <div id="typing-indicator" style="padding:4px 16px;font-size:11px;color:var(--dim);height:20px;"></div>
       <div id="chat-input">
         <label class="file-btn" title="Send file">&#128206;<input type="file" id="file-in" class="hidden"></label>
         <input id="msg-in" placeholder="type a message..." autocomplete="off" spellcheck="false">
@@ -712,8 +720,11 @@ function showChat(){
   }
 
   // event handlers
-  $('btn-send').onclick=doSend;
-  $('msg-in').onkeydown=e=>{if(e.key==='Enter'&&!e.shiftKey)doSend()};
+  $('btn-send').onclick=()=>{broadcastTyping(false);doSend();};
+  $('msg-in').onkeydown=e=>{
+    if(e.key==='Enter'&&!e.shiftKey){broadcastTyping(false);doSend();}
+    else onInputTyping();
+  };
   $('btn-members').onclick=()=>$('members-panel').classList.toggle('hidden');
   $('btn-close-members').onclick=()=>$('members-panel').classList.add('hidden');
   $('file-in').onchange=e=>{if(e.target.files[0])sendFile(e.target.files[0]);e.target.value=''};
@@ -801,6 +812,38 @@ function renderMessage(msg){
 function scrollBottom(){
   const el=$('messages');
   if(el)el.scrollTop=el.scrollHeight;
+}
+
+// ============ TYPING INDICATORS ============
+function handleTyping(peerId, isTyping){
+  if(isTyping)S.typing.add(peerId);
+  else S.typing.delete(peerId);
+  updateTypingIndicator();
+}
+
+function updateTypingIndicator(){
+  const el=document.getElementById('typing-indicator');
+  if(!el)return;
+  if(S.typing.size===0){el.textContent='';return;}
+
+  const names=[...S.typing].map(id=>{
+    const p=S.peers.get(id);
+    return p?.nick||'someone';
+  });
+
+  if(names.length===1)el.textContent=names[0]+' is typing...';
+  else if(names.length===2)el.textContent=names.join(' and ')+' are typing...';
+  else el.textContent=names[0]+' and '+(names.length-1)+' others are typing...';
+}
+
+function broadcastTyping(isTyping){
+  broadcast({type:'typing',typing:isTyping});
+}
+
+function onInputTyping(){
+  broadcastTyping(true);
+  if(S.typingTimer)clearTimeout(S.typingTimer);
+  S.typingTimer=setTimeout(()=>broadcastTyping(false),3000);
 }
 
 function updateChatUI(){
