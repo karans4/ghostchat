@@ -1,5 +1,5 @@
-const CACHE='ghost-v1';
-const ASSETS=['ghost.html','manifest.json','icon.svg'];
+const CACHE='ghost-v2';
+const ASSETS=['ghost.html','manifest.json','icon.svg','https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js'];
 
 self.addEventListener('install',e=>{
   e.waitUntil(caches.open(CACHE).then(c=>c.addAll(ASSETS)));
