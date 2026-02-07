@@ -2,1361 +2,209 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no">
-<meta name="theme-color" content="#0a0f0a">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="description" content="P2P encrypted chat. No server.">
-<link rel="manifest" href="manifest.json">
-<link rel="icon" href="icon.svg" type="image/svg+xml">
-<link rel="apple-touch-icon" href="icon-192.png">
+<meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Ghost</title>
 <style>
-:root{--bg:#0a0f0a;--s:#0d1a0d;--b:#1a331a;--t:#e0f0e0;--dim:#7a9a7a;--acc:#4ade80;--grn:#22c55e;--red:#ef4444;--font:'SF Mono','Fira Code',monospace}
+:root{--bg:#0a0f0a;--s:#0d1a0d;--b:#1a331a;--t:#e0f0e0;--dim:#7a9a7a;--acc:#4ade80;--grn:#22c55e;--red:#ef4444;--font:system-ui,-apple-system,sans-serif}
 *{margin:0;padding:0;box-sizing:border-box}
 html,body{height:100vh;overflow:hidden}
-body{
-  background:var(--bg);color:var(--t);font-family:var(--font);font-size:13px;
-  position:relative;
-}
-body::before{
-  content:'';position:fixed;top:0;left:0;right:0;bottom:0;
-  background:
-    radial-gradient(1px 1px at 20px 30px,#4ade80,rgba(0,0,0,0)),
-    radial-gradient(1px 1px at 40px 70px,#22c55e,rgba(0,0,0,0)),
-    radial-gradient(1px 1px at 50px 160px,#4ade80,rgba(0,0,0,0)),
-    radial-gradient(1px 1px at 90px 40px,#22c55e,rgba(0,0,0,0)),
-    radial-gradient(1px 1px at 130px 80px,#4ade80,rgba(0,0,0,0)),
-    radial-gradient(1px 1px at 160px 120px,#22c55e,rgba(0,0,0,0)),
-    radial-gradient(2px 2px at 200px 50px,#4ade80,rgba(0,0,0,0)),
-    radial-gradient(2px 2px at 250px 180px,#22c55e,rgba(0,0,0,0)),
-    radial-gradient(1px 1px at 300px 90px,#4ade80,rgba(0,0,0,0)),
-    radial-gradient(1px 1px at 350px 150px,#22c55e,rgba(0,0,0,0)),
-    radial-gradient(1px 1px at 400px 30px,#4ade80,rgba(0,0,0,0)),
-    radial-gradient(1px 1px at 450px 100px,#22c55e,rgba(0,0,0,0)),
-    radial-gradient(1px 1px at 500px 170px,#4ade80,rgba(0,0,0,0)),
-    radial-gradient(1px 1px at 550px 60px,#22c55e,rgba(0,0,0,0)),
-    radial-gradient(2px 2px at 600px 130px,#4ade80,rgba(0,0,0,0)),
-    radial-gradient(1px 1px at 650px 20px,#22c55e,rgba(0,0,0,0)),
-    radial-gradient(1px 1px at 700px 90px,#4ade80,rgba(0,0,0,0)),
-    radial-gradient(1px 1px at 750px 160px,#22c55e,rgba(0,0,0,0)),
-    radial-gradient(1px 1px at 800px 50px,#4ade80,rgba(0,0,0,0)),
-    radial-gradient(1px 1px at 850px 120px,#22c55e,rgba(0,0,0,0)),
-    radial-gradient(1px 1px at 900px 40px,#4ade80,rgba(0,0,0,0)),
-    radial-gradient(1px 1px at 950px 180px,#22c55e,rgba(0,0,0,0)),
-    radial-gradient(1px 1px at 100px 250px,#4ade80,rgba(0,0,0,0)),
-    radial-gradient(1px 1px at 250px 300px,#22c55e,rgba(0,0,0,0)),
-    radial-gradient(2px 2px at 400px 280px,#4ade80,rgba(0,0,0,0)),
-    radial-gradient(1px 1px at 550px 320px,#22c55e,rgba(0,0,0,0)),
-    radial-gradient(1px 1px at 700px 260px,#4ade80,rgba(0,0,0,0)),
-    radial-gradient(1px 1px at 850px 340px,#22c55e,rgba(0,0,0,0));
-  background-size:1000px 400px;
-  animation:stars 100s linear infinite;
-  opacity:0.6;pointer-events:none;z-index:-1;
-}
-@keyframes stars{from{transform:translateY(0)}to{transform:translateY(-400px)}}
-#app{position:relative;z-index:1;height:100vh}
-button{background:var(--s);color:var(--t);border:1px solid var(--b);padding:8px 16px;font-family:var(--font);font-size:13px;cursor:pointer;border-radius:4px;transition:all .2s}
-button:hover{border-color:var(--acc);color:#fff;box-shadow:0 0 10px rgba(74,222,128,.3)}
-button.primary{background:var(--acc);color:#000;border-color:var(--acc);font-weight:bold}
-button.primary:hover{background:#22c55e;box-shadow:0 0 15px rgba(74,222,128,.5)}
-button.danger{border-color:var(--red);color:var(--red)}
-button.danger:hover{background:var(--red);color:#fff}
-input,textarea{background:var(--bg);color:var(--t);border:1px solid var(--b);padding:8px 12px;font-family:var(--font);font-size:13px;border-radius:4px;width:100%;outline:none}
+body{background:var(--bg);color:var(--t);font-family:var(--font);font-size:14px;position:relative}
+body::before{content:'';position:fixed;top:0;left:0;right:0;bottom:0;background:radial-gradient(1px 1px at 20px 30px,#4ade80,transparent),radial-gradient(1px 1px at 50px 160px,#4ade80,transparent),radial-gradient(2px 2px at 200px 50px,#22c55e,transparent),radial-gradient(1px 1px at 400px 30px,#4ade80,transparent);background-size:500px 200px;opacity:0.4;pointer-events:none;z-index:-1}
+.center{display:flex;justify-content:center;align-items:center;height:100vh;padding:20px}
+.box{background:var(--s);border:1px solid var(--b);border-radius:12px;padding:32px;max-width:400px;width:100%;text-align:center}
+h1{font-size:28px;margin-bottom:8px;color:#fff}
+p{color:var(--dim);margin-bottom:24px;font-size:13px}
+input,textarea{background:var(--bg);color:var(--t);border:1px solid var(--b);padding:12px 16px;font-size:14px;border-radius:8px;width:100%;outline:none;margin:8px 0}
 input:focus,textarea:focus{border-color:var(--acc)}
-textarea{resize:none}
-.center{display:flex;justify-content:center;align-items:center;height:100vh}
-.box{background:var(--s);border:1px solid var(--b);border-radius:8px;padding:32px;max-width:480px;width:90%}
-.box h1{font-size:24px;margin-bottom:4px;color:#fff}
-.box p{color:var(--dim);margin-bottom:20px;font-size:12px}
-.box label{display:block;color:var(--dim);font-size:11px;margin-bottom:4px;margin-top:16px;text-transform:uppercase;letter-spacing:1px}
-.box .actions{margin-top:20px;display:flex;gap:8px}
-.code-box{position:relative;margin-top:4px}
-.code-box textarea{font-size:11px;min-height:60px}
-.code-box button{position:absolute;top:4px;right:4px;padding:4px 8px;font-size:11px}
-.status{color:var(--dim);font-size:12px;margin-top:12px;display:flex;align-items:center;gap:6px}
-.status .dot{width:6px;height:6px;border-radius:50%;background:var(--dim);animation:pulse 1.5s infinite}
-.status.ok .dot{background:var(--grn);animation:none}
-@keyframes pulse{0%,100%{opacity:.3}50%{opacity:1}}
-.link-box{background:var(--bg);border:1px solid var(--b);border-radius:4px;padding:8px 12px;font-size:11px;word-break:break-all;display:flex;align-items:center;gap:8px;margin-top:4px}
-.link-box span{flex:1;color:var(--acc)}
-.link-box button{flex-shrink:0}
-#chat-view{display:flex;flex-direction:column;height:100vh}
-#chat-header{background:var(--s);border-bottom:1px solid var(--b);padding:10px 16px;display:flex;align-items:center;gap:12px;flex-shrink:0}
-#chat-header .room-name{color:#fff;font-weight:bold}
-#chat-header .peer-count{color:var(--dim);font-size:12px}
-#chat-header .spacer{flex:1}
-#messages{flex:1;overflow-y:auto;padding:12px 16px;display:flex;flex-direction:column;gap:2px}
-.msg{line-height:1.6}
-.msg .ts{color:var(--dim);font-size:11px}
-.msg .nick{font-weight:bold}
-.msg.self .nick{color:var(--acc)}
-.msg.sys{color:var(--dim);font-style:italic}
-.msg.sys .ts{font-style:normal}
-.file-link{color:var(--grn);text-decoration:underline;cursor:pointer}
-#chat-input{background:var(--s);border-top:1px solid var(--b);padding:10px 16px;display:flex;gap:8px;flex-shrink:0;align-items:center}
-#chat-input input{flex:1}
-#chat-input label.file-btn{cursor:pointer;color:var(--dim);padding:4px 8px;border:1px solid var(--b);border-radius:4px;font-size:16px}
-#chat-input label.file-btn:hover{color:var(--t);border-color:var(--acc)}
-.hidden{display:none!important}
-.qr-wrap{text-align:center;margin:12px 0;background:#fff;border-radius:8px;padding:12px;display:inline-block;min-width:200px;min-height:200px}
-.qr-wrap svg{display:block;width:100%;height:auto;min-width:180px}
-.qr-wrap img{display:block;image-rendering:pixelated}
-.qr-row{display:flex;gap:8px;align-items:center;justify-content:center;flex-wrap:wrap;margin-top:8px}
-.scan-btn{display:inline-flex;align-items:center;gap:4px}
-video.scanner{width:100%;max-width:300px;border-radius:8px;margin:8px auto;display:block;background:#000}
-.tab-row{display:flex;gap:0;margin-bottom:12px}
-.tab-row button{flex:1;border-radius:0;border-bottom:2px solid transparent;background:none;color:var(--dim)}
-.tab-row button.active{color:var(--acc);border-bottom-color:var(--acc)}
-.members-panel{position:fixed;top:0;right:0;width:240px;height:100vh;background:var(--s);border-left:1px solid var(--b);padding:16px;z-index:10;display:flex;flex-direction:column}
-.members-panel h3{margin-bottom:12px;font-size:13px;color:#fff}
-.members-panel .member{padding:4px 0;font-size:12px;color:var(--t);display:flex;align-items:center;gap:6px}
-.members-panel .member .online{width:6px;height:6px;border-radius:50%;background:var(--grn)}
-.members-panel .close-btn{position:absolute;top:12px;right:12px;background:none;border:none;color:var(--dim);cursor:pointer;font-size:16px}
-.invite-section{margin-top:auto;padding-top:16px;border-top:1px solid var(--b)}
-.invite-section label{display:block;color:var(--dim);font-size:11px;margin-bottom:4px;text-transform:uppercase;letter-spacing:1px}
-.toast{position:fixed;top:16px;left:50%;transform:translateX(-50%);background:var(--s);border:1px solid var(--b);padding:8px 16px;border-radius:4px;font-size:12px;z-index:100;opacity:0;transition:opacity .3s}
-.toast.show{opacity:1}
+button{background:var(--acc);color:#000;border:none;padding:12px 24px;font-size:14px;font-weight:600;border-radius:8px;cursor:pointer;width:100%;margin-top:16px}
+button:hover{background:#22c55e}
+button.secondary{background:transparent;color:var(--t);border:1px solid var(--b)}
+button.secondary:hover{border-color:var(--acc)}
+.code-box{background:var(--bg);border:1px solid var(--b);border-radius:8px;padding:16px;font-family:monospace;font-size:12px;word-break:break-all;margin:16px 0}
+.qr-wrap{background:#fff;border-radius:8px;padding:16px;display:inline-block;margin:16px 0}
+#messages{position:fixed;top:0;left:0;right:0;bottom:80px;overflow-y:auto;padding:20px}
+#input-area{position:fixed;bottom:0;left:0;right:0;padding:16px 20px;background:var(--s);border-top:1px solid var(--b);display:flex;gap:12px}
+#msg-input{flex:1;margin:0}
+.msg{margin:8px 0;padding:12px 16px;background:var(--s);border-radius:12px;border:1px solid var(--b);max-width:80%}
+.msg.self{margin-left:auto;background:var(--b);border-color:var(--acc)}
+.msg .nick{font-size:11px;color:var(--dim);margin-bottom:4px}
+.hidden{display:none}
 </style>
 </head>
 <body>
 <div id="app"></div>
-<div class="toast" id="toast"></div>
 <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js"></script>
 <script>
-// ============ CONFIG ============
-const STUN = [{urls:'stun:stun.l.google.com:19302'},{urls:'stun:stun1.l.google.com:19302'}];
-const ICE_TIMEOUT = 5000;
-const CHUNK_SIZE = 16384;
-const MSG_TTL = 2*24*3600*1000;
-// Fallback signaling servers — try in order, fastest wins
-const SIGNAL_SERVERS = [
-  'wss://ghost-signal.notruefireman.org',  // Cloudflare Worker (edge)
-  'wss://ghost-fly.fly.dev',               // Fly.io (edge)
-  'wss://signal.notruefireman.org:8443',   // Your server (backup)
-];
+const STUN=[{urls:'stun:stun.l.google.com:19302'},{urls:'stun:stun1.l.google.com:19302'}];
+const S={pc:null,dc:null,key:null,room:null,nick:null,myId:crypto.randomUUID()};
+const $=id=>document.getElementById(id);
+const rnd=(n=4)=>[...crypto.getRandomValues(new Uint8Array(n))].map(b=>b.toString(16).padStart(2,'0')).join('');
+const b64url=buf=>btoa(String.fromCharCode(...new Uint8Array(buf))).replace(/\+/g,'-').replace(/\//g,'_').replace(/=/g,'');
+const unb64=s=>{s=s.replace(/-/g,'+').replace(/_/g,'/');while(s.length%4)s+='=';return Uint8Array.from(atob(s),c=>c.charCodeAt(0))};
 
-// QR Fallback: visual handshake, no servers
-// Both cameras active, exchange offer/answer via QR automatically
-
-// ============ STATE ============
-const S = {
-  roomId: null, roomKey: null, nick: null, isAdmin: false,
-  myId: crypto.randomUUID(),
-  peers: new Map(),       // peerId -> {pc, dc, nick, introducedBy}
-  messages: [],           // chat history
-  pendingPCs: new Map(),  // peerId -> {pc, role}
-  files: new Map(),       // fileId -> {meta, chunks[], done}
-  typing: new Set(),      // peerIds currently typing
-  typingTimer: null,      // debounce timer for typing events
-};
-
-// ============ UTIL ============
-const b64url = buf => btoa(String.fromCharCode(...new Uint8Array(buf))).replace(/\+/g,'-').replace(/\//g,'_').replace(/=/g,'');
-const unb64 = s => {s=s.replace(/-/g,'+').replace(/_/g,'/');while(s.length%4)s+='=';return Uint8Array.from(atob(s),c=>c.charCodeAt(0))};
-const rnd = (n=4) => [...crypto.getRandomValues(new Uint8Array(n))].map(b=>b.toString(16).padStart(2,'0')).join('');
-const ts = () => new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
-const esc = s => {const d=document.createElement('div');d.textContent=s;return d.innerHTML};
-
-function toast(msg,ms=2000){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),ms)}
-
-// ============ CRYPTO ============
 async function genKey(){return crypto.subtle.generateKey({name:'AES-GCM',length:256},true,['encrypt','decrypt'])}
 async function expKey(k){return b64url(await crypto.subtle.exportKey('raw',k))}
 async function impKey(s){return crypto.subtle.importKey('raw',unb64(s),{name:'AES-GCM'},true,['encrypt','decrypt'])}
-async function enc(key,txt){
-  const iv=crypto.getRandomValues(new Uint8Array(12));
-  const ct=new Uint8Array(await crypto.subtle.encrypt({name:'AES-GCM',iv},key,new TextEncoder().encode(txt)));
-  const r=new Uint8Array(12+ct.length);r.set(iv);r.set(ct,12);return b64url(r);
-}
-async function dec(key,data){
-  const buf=unb64(data),iv=buf.slice(0,12),ct=buf.slice(12);
-  return new TextDecoder().decode(await crypto.subtle.decrypt({name:'AES-GCM',iv},key,ct));
-}
+async function enc(k,txt){const iv=crypto.getRandomValues(new Uint8Array(12));const ct=new Uint8Array(await crypto.subtle.encrypt({name:'AES-GCM',iv},k,new TextEncoder().encode(txt)));const r=new Uint8Array(12+ct.length);r.set(iv);r.set(ct,12);return b64url(r)}
+async function dec(k,data){const buf=unb64(data),iv=buf.slice(0,12),ct=buf.slice(12);return new TextDecoder().decode(await crypto.subtle.decrypt({name:'AES-GCM',iv},k,ct))}
 
-// ============ SDP COMPRESS ============
-async function compressSDP(sdp){
-  const cs=new CompressionStream('deflate');
-  const w=new Blob([sdp]).stream().pipeThrough(cs);
-  return b64url(new Uint8Array(await new Response(w).arrayBuffer()));
-}
-async function decompressSDP(s){
-  const ds=new DecompressionStream('deflate');
-  const w=new Blob([unb64(s)]).stream().pipeThrough(ds);
-  return new Response(w).text();
-}
-
-// ============ WEBRTC ============
-function createPC(){return new RTCPeerConnection({iceServers:STUN})}
-function iceReady(pc){
-  return new Promise(r=>{
-    if(pc.iceGatheringState==='complete')return r();
-    const t=setTimeout(r,ICE_TIMEOUT);
-    pc.onicegatheringstatechange=()=>{if(pc.iceGatheringState==='complete'){clearTimeout(t);r()}};
-  });
-}
-
-async function createOffer(){
-  const pc=createPC();
-  const dc=pc.createDataChannel('ghost',{ordered:true});
-  const offer=await pc.createOffer();
-  await pc.setLocalDescription(offer);
-  await iceReady(pc);
-  const code='O:'+await compressSDP(pc.localDescription.sdp);
-  return {pc,dc,code};
-}
-
-async function acceptOffer(offerSDP){
-  const pc=createPC();
-  let dcResolve;
-  const dcPromise=new Promise(r=>{dcResolve=r});
-  pc.ondatachannel=e=>{dcResolve(e.channel)};
-  await pc.setRemoteDescription({type:'offer',sdp:offerSDP});
-  const ans=await pc.createAnswer();
-  await pc.setLocalDescription(ans);
-  await iceReady(pc);
-  const code='A:'+await compressSDP(pc.localDescription.sdp);
-  return {pc,code,dcPromise};
-}
-
-async function acceptAnswer(pc,answerSDP){
-  await pc.setRemoteDescription({type:'answer',sdp:answerSDP});
-}
-
-async function parseCode(code){
-  const type=code[0];
-  const sdp=await decompressSDP(code.slice(2));
-  return {type,sdp};
-}
-
-// ============ PEER MGMT ============
-function setupDC(peerId,dc){
-  dc.onopen=()=>{
-    console.log('connected to',peerId);
-    // send join announcement
-    sendTo(peerId,{type:'join',peerId:S.myId,nick:S.nick});
-    // if we're the one with existing peers, send peer list
-    const others=[...S.peers.keys()].filter(id=>id!==peerId);
-    if(others.length>0) sendTo(peerId,{type:'peer-list',peers:others.map(id=>({id,nick:S.peers.get(id).nick}))});
-    onConnected(peerId);
-  };
-  dc.onclose=()=>onDisconnected(peerId);
-  dc.onerror=e=>console.error('dc error',peerId,e);
-  dc.onmessage=async e=>{
-    try{
-      const json=await dec(S.roomKey,e.data);
-      handleMsg(peerId,JSON.parse(json));
-    }catch(err){console.error('msg decrypt/parse fail',err)}
-  };
-}
-
-function addPeer(peerId,pc,dc,nick){
-  S.peers.set(peerId,{pc,dc,nick:nick||'???'});
-  pc.onconnectionstatechange=()=>{
-    if(pc.connectionState==='failed'||pc.connectionState==='closed')onDisconnected(peerId);
-  };
-}
-
-async function sendTo(peerId,msg){
-  const peer=S.peers.get(peerId);
-  if(!peer||peer.dc.readyState!=='open')return;
-  peer.dc.send(await enc(S.roomKey,JSON.stringify(msg)));
-}
-
-async function broadcast(msg,exclude){
-  const data=await enc(S.roomKey,JSON.stringify(msg));
-  for(const[id,p]of S.peers){
-    if(id!==exclude&&p.dc.readyState==='open')p.dc.send(data);
-  }
-}
-
-function onConnected(peerId){
-  if(document.getElementById('chat-view'))updateChatUI();
-  else showChat();
-}
-
-function onDisconnected(peerId){
-  const peer=S.peers.get(peerId);
-  if(!peer)return;
-  const nick=peer.nick;
-  peer.pc.close();
-  S.peers.delete(peerId);
-  S.typing.delete(peerId); // clear typing status
-  updateTypingIndicator();
-  addSysMsg(`${nick} left`);
-  updateChatUI();
-}
-
-// ============ MESH ============
-async function meshConnect(targetId){
-  // create offer for a remote peer, relay through existing connections
-  const pc=createPC();
-  const dc=pc.createDataChannel('ghost',{ordered:true});
-  setupDC(targetId,dc);
-  S.pendingPCs.set(targetId,{pc,dc});
-  addPeer(targetId,pc,dc,null);
-
-  const offer=await pc.createOffer();
-  await pc.setLocalDescription(offer);
-  await iceReady(pc);
-  broadcast({type:'relay',target:targetId,from:S.myId,signal:{type:'offer',sdp:pc.localDescription.sdp}});
-}
-
-async function handleRelay(fromPeer,msg){
-  // is this relay for us?
-  if(msg.target===S.myId){
-    if(msg.signal.type==='offer'){
-      const pc=createPC();
-      let dcR;const dcP=new Promise(r=>{dcR=r});
-      pc.ondatachannel=e=>{
-        const dc=e.channel;
-        setupDC(msg.from,dc);
-        addPeer(msg.from,pc,dc,null);
-        dcR(dc);
-      };
-      await pc.setRemoteDescription({type:'offer',sdp:msg.signal.sdp});
-      const ans=await pc.createAnswer();
-      await pc.setLocalDescription(ans);
-      await iceReady(pc);
-      broadcast({type:'relay',target:msg.from,from:S.myId,signal:{type:'answer',sdp:pc.localDescription.sdp}});
-    }else if(msg.signal.type==='answer'){
-      const pending=S.pendingPCs.get(msg.from)||S.peers.get(msg.from);
-      if(pending&&pending.pc)await acceptAnswer(pending.pc,msg.signal.sdp);
-      S.pendingPCs.delete(msg.from);
-    }
-  }else{
-    // forward to target if we're connected
-    const target=S.peers.get(msg.target);
-    if(target&&target.dc.readyState==='open'){
-      sendTo(msg.target,msg);
-    }
-  }
-}
-
-// ============ MESSAGES ============
-function handleMsg(fromPeer,msg){
-  switch(msg.type){
-    case 'chat': addChatMsg(msg); break;
-    case 'join':
-      const peer=S.peers.get(fromPeer);
-      if(peer){peer.nick=msg.nick;updateChatUI()}
-      addSysMsg(`${msg.nick} joined`);
-      break;
-    case 'peer-list':
-      for(const p of msg.peers){
-        if(p.id!==S.myId&&!S.peers.has(p.id)){
-          meshConnect(p.id);
-        }
-      }
-      break;
-    case 'relay': handleRelay(fromPeer,msg); break;
-    case 'sync':
-      for(const m of msg.messages){
-        if(!S.messages.find(x=>x.id===m.id)){S.messages.push(m)}
-      }
-      S.messages.sort((a,b)=>a.ts-b.ts);
-      renderMessages();
-      break;
-    case 'file-offer': handleFileOffer(fromPeer,msg); break;
-    case 'file-chunk': handleFileChunk(msg); break;
-    case 'destroy':
-      addSysMsg('Room destroyed by admin. Clearing data...');
-      clearRoomState();
-      setTimeout(()=>{clearRoom();showHome()},2000);
-      break;
-    case 'nick-update':
-      const p2=S.peers.get(fromPeer);
-      if(p2)p2.nick=msg.nick;
-      updateChatUI();
-      break;
-    case 'typing':
-      handleTyping(fromPeer, msg.typing);
-      break;
-  }
-}
-
-function addChatMsg(msg){
-  S.messages.push(msg);
-  renderMessage(msg);
-  saveMessages();
-  scrollBottom();
-}
-
-function addSysMsg(text){
-  const msg={id:crypto.randomUUID(),type:'sys',text,ts:Date.now()};
-  S.messages.push(msg);
-  renderMessage(msg);
-  saveMessages();
-  scrollBottom();
-}
-
-// ============ FILE TRANSFER ============
-async function sendFile(file){
-  if(file.size>50*1024*1024){toast('Max file size: 50MB');return}
-  const fileId=crypto.randomUUID();
-  const buf=await file.arrayBuffer();
-  const total=Math.ceil(buf.byteLength/CHUNK_SIZE);
-
-  broadcast({type:'file-offer',fileId,name:file.name,size:file.size,total,from:S.myId,nick:S.nick});
-  addChatMsg({id:crypto.randomUUID(),type:'chat',from:S.myId,nick:S.nick,text:`sent file: ${file.name} (${fmtSize(file.size)})`,ts:Date.now(),isFile:true});
-
-  for(let i=0;i<total;i++){
-    const chunk=new Uint8Array(buf.slice(i*CHUNK_SIZE,(i+1)*CHUNK_SIZE));
-    broadcast({type:'file-chunk',fileId,index:i,data:b64url(chunk),total});
-    if(i%10===0)await new Promise(r=>setTimeout(r,10)); // yield
-  }
-}
-
-function handleFileOffer(from,msg){
-  S.files.set(msg.fileId,{meta:msg,chunks:new Array(msg.total),received:0});
-}
-
-function handleFileChunk(msg){
-  const f=S.files.get(msg.fileId);
-  if(!f)return;
-  f.chunks[msg.index]=unb64(msg.data);
-  f.received++;
-  if(f.received===f.total){
-    // reassemble
-    const total=f.chunks.reduce((s,c)=>s+c.length,0);
-    const buf=new Uint8Array(total);
-    let off=0;
-    for(const c of f.chunks){buf.set(c,off);off+=c.length}
-    const blob=new Blob([buf]);
-    const url=URL.createObjectURL(blob);
-    addChatMsg({id:crypto.randomUUID(),type:'chat',from:f.meta.from,nick:f.meta.nick,text:`file ready: ${f.meta.name}`,ts:Date.now(),isFile:true,fileUrl:url,fileName:f.meta.name});
-    S.files.delete(msg.fileId);
-  }
-}
-
-function fmtSize(b){
-  if(b<1024)return b+'B';
-  if(b<1048576)return(b/1024).toFixed(1)+'KB';
-  return(b/1048576).toFixed(1)+'MB';
-}
-
-// ============ STORAGE (IndexedDB) ============
-function openDB(){
-  return new Promise((res,rej)=>{
-    const req=indexedDB.open('ghost-'+S.roomId,1);
-    req.onupgradeneeded=()=>req.result.createObjectStore('msgs',{keyPath:'id'});
-    req.onsuccess=()=>res(req.result);
-    req.onerror=()=>rej(req.error);
-  });
-}
-
-async function saveMessages(){
-  try{
-    const db=await openDB();
-    const tx=db.transaction('msgs','readwrite');
-    const store=tx.objectStore('msgs');
-    for(const m of S.messages)store.put(m);
-    db.close();
-  }catch(e){console.error('save fail',e)}
-}
-
-async function loadMessages(){
-  try{
-    const db=await openDB();
-    const tx=db.transaction('msgs','readonly');
-    const store=tx.objectStore('msgs');
-    return new Promise((res,rej)=>{
-      const req=store.getAll();
-      req.onsuccess=()=>{db.close();res(req.result||[])};
-      req.onerror=()=>{db.close();rej(req.error)};
-    });
-  }catch(e){return[]}
-}
-
-async function clearRoom(){
-  try{indexedDB.deleteDatabase('ghost-'+S.roomId)}catch(e){}
-  S.messages=[];S.peers.forEach(p=>p.pc.close());S.peers.clear();
-}
-
-async function cleanOldMessages(){
-  const cutoff=Date.now()-MSG_TTL;
-  S.messages=S.messages.filter(m=>m.ts>cutoff);
-  await saveMessages();
-}
-
-// ============ UI ============
-// ============ QR CODE ============
-function makeQR(text,size=6){
-  try{
-    const qr=qrcode(0,'M');
-    qr.addData(text);
-    qr.make();
-    return qr.createSvgTag({cellSize:size,margin:2});
-  }catch(e){
-    // data too long for QR, try with lower EC
-    try{
-      const qr=qrcode(0,'L');
-      qr.addData(text);
-      qr.make();
-      return qr.createSvgTag({cellSize:size,margin:2});
-    }catch(e2){return '<div style="color:var(--dim);font-size:11px">Code too long for QR</div>'}
-  }
-}
-
-// QR Scanner via BarcodeDetector or camera
-async function startQRScanner(targetInput){
-  if(!navigator.mediaDevices){toast('Camera not available');return null}
-  const video=document.createElement('video');
-  video.className='scanner';video.autoplay=true;video.playsInline=true;
-  const stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'environment'}});
-  video.srcObject=stream;
-  await video.play();
-
-  const hasDetector='BarcodeDetector' in window;
-  let detector=hasDetector?new BarcodeDetector({formats:['qr_code']}):null;
-  let stopped=false;
-
-  const stop=()=>{stopped=true;stream.getTracks().forEach(t=>t.stop());video.remove()};
-
-  if(detector){
-    const scan=async()=>{
-      if(stopped)return;
-      try{
-        const codes=await detector.detect(video);
-        if(codes.length>0){
-          const val=codes[0].rawValue;
-          if(targetInput)targetInput.value=val;
-          stop();toast('QR code scanned!');
-          return;
-        }
-      }catch(e){}
-      requestAnimationFrame(scan);
-    };
-    requestAnimationFrame(scan);
-  }
-  return{video,stop};
-}
-
-const $=id=>document.getElementById(id);
+async function compress(s){const c=new CompressionStream('deflate');const w=new Blob([s]).stream().pipeThrough(c);return b64url(new Uint8Array(await new Response(w).arrayBuffer()))}
+async function decompress(s){const d=new DecompressionStream('deflate');const w=new Blob([unb64(s)]).stream().pipeThrough(d);return new Response(w).text()}
 
 function showHome(){
-  const stored=localStorage.getItem('ghost-nick')||('ghost-'+rnd(2));
-  $('app').innerHTML=`
-    <div class="center"><div class="box">
-      <h1>Ghost</h1>
-      <p>peer-to-peer encrypted chat &middot; no server</p>
-      <label>Nickname</label>
-      <input id="nick-in" value="${esc(stored)}" maxlength="20" spellcheck="false">
-      <div class="actions">
-        <button class="primary" id="btn-create">Create Room</button>
-        <button id="btn-join">Join Room</button>
-      </div>
-      <div style="margin-top:16px;text-align:center">
-        <button id="btn-qr-mode" style="background:none;border:none;color:var(--dim);font-size:11px;cursor:pointer">
-          Use QR Code (offline)
-        </button>
-      </div>
-    </div></div>`;
-  $('btn-create').onclick=doCreate;
-  $('btn-join').onclick=()=>showJoinInput();
-  $('btn-qr-mode').onclick=doCreateWithQRFallback;
+  $('app').innerHTML=`<div class="center"><div class="box">
+    <h1>Ghost</h1>
+    <p>Temporary private chat. No logs. No servers.</p>
+    <input id="nick-in" placeholder="Your name" maxlength="20" value="${localStorage.getItem('ghost-nick')||''}">
+    <button onclick="doCreate()">Create Room</button>
+    <button class="secondary" onclick="showJoin()">Join Room</button>
+  </div></div>`;
 }
-
-// ============ WEBSOCKET SIGNALING ============
-// Uses Cloudflare Worker for SDP exchange, then WebRTC takes over
-
-let ws = null;
-let wsQueue = [];
-
-function connectSignaling(roomId, onMessage) {
-  tryServer(0);
-
-  function tryServer(index) {
-    if (index >= SIGNAL_SERVERS.length) {
-      console.error('[signal] all servers failed');
-      toast('Signaling unavailable. Try QR code mode.');
-      return;
-    }
-
-    const url = `${SIGNAL_SERVERS[index]}?room=${encodeURIComponent(roomId)}`;
-    console.log(`[signal] trying ${SIGNAL_SERVERS[index]}`);
-
-    ws = new WebSocket(url);
-    let connected = false;
-
-    // Timeout for this attempt
-    const timeout = setTimeout(() => {
-      if (!connected) {
-        console.log(`[signal] ${SIGNAL_SERVERS[index]} timeout, trying next`);
-        ws.close();
-        tryServer(index + 1);
-      }
-    }, 3000);
-
-    ws.onopen = () => {
-      connected = true;
-      clearTimeout(timeout);
-      console.log(`[signal] connected to ${SIGNAL_SERVERS[index]}`);
-
-      // Flush queued messages
-      while (wsQueue.length > 0 && ws.readyState === WebSocket.OPEN) {
-        ws.send(JSON.stringify(wsQueue.shift()));
-      }
-    };
-
-    ws.onmessage = (e) => {
-      try {
-        const msg = JSON.parse(e.data);
-        onMessage(msg);
-      } catch (err) {}
-    };
-
-    ws.onclose = () => {
-      if (!connected) return; // Already handled by timeout
-      console.log('[signal] disconnected');
-      ws = null;
-      // Try to reconnect to same server or fallback
-      setTimeout(() => tryServer(index), 1000);
-    };
-
-    ws.onerror = () => {
-      // Let timeout handle it
-    };
-  }
-}
-
-function signalSend(msg) {
-  if (ws && ws.readyState === WebSocket.OPEN) {
-    ws.send(JSON.stringify(msg));
-  } else {
-    wsQueue.push(msg);
-  }
-}
-
-// ============ QR FALLBACK (Serverless) ============
-// When signaling fails, use visual handshake:
-// 1. Host shows offer QR
-// 2. Phone scans, generates answer, shows answer QR
-// 3. Host scans answer, connects
-// All automatic, user just holds phones facing each other
-
-async function doCreateWithQRFallback() {
-  S.nick = $('nick-in').value.trim() || 'ghost-' + rnd(2);
-  localStorage.setItem('ghost-nick', S.nick);
-  S.roomId = rnd(4);
-  S.roomKey = await genKey();
-  S.isAdmin = true;
-  const keyStr = await expKey(S.roomKey);
-  history.replaceState(null, '', '#' + S.roomId + '.' + keyStr);
-  saveRoomState();
-
-  // Generate offer
-  const { pc, dc, code } = await createOffer();
-  const offerSDP = code.slice(2);
-  S.pendingOffer = { pc, dc, offerSDP };
-
-  // Show offer QR
-  const shareUrl = location.origin + location.pathname + '#' + S.roomId + '.' + keyStr;
-  $('app').innerHTML = `
-    <div class="center"><div class="box">
-      <h1>Scan to Connect</h1>
-      <p style="color:var(--dim);font-size:12px;margin-bottom:16px">Hold phones facing each other</p>
-      <div id="offer-qr" style="text-align:center;margin:16px 0"></div>
-      <div id="scan-answer" style="text-align:center;margin:16px 0;display:none">
-        <p style="color:var(--dim);font-size:12px">Scanning for response...</p>
-        <div id="answer-scanner"></div>
-      </div>
-      <div class="status" id="conn-status"><span class="dot"></span> waiting for peer</div>
-      <div class="actions"><button id="btn-cancel">Cancel</button></div>
-    </div></div>`;
-
-  $('offer-qr').innerHTML = '<div class="qr-wrap" style="padding:16px">' + makeQR('O:' + offerSDP, 4) + '</div>';
-  $('btn-cancel').onclick = () => { S.pendingOffer = null; showHome(); };
-
-  // Start scanning for answer QR automatically
-  startAnswerScanner();
-}
-
-async function startAnswerScanner() {
-  if (!S.pendingOffer) return;
-
-  $('scan-answer').style.display = 'block';
-
-  // Try to detect answer QR from peer
-  const scan = await startQRScanner(null);
-  if (!scan) {
-    $('conn-status').innerHTML = '<span class="dot"></span> camera error';
-    return;
-  }
-
-  $('answer-scanner').appendChild(scan.video);
-
-  // Poll for answer code
-  const checkInterval = setInterval(async () => {
-    if (!S.pendingOffer) {
-      clearInterval(checkInterval);
-      scan.stop();
-      return;
-    }
-
-    // Use BarcodeDetector if available
-    if ('BarcodeDetector' in window) {
-      try {
-        const detector = new BarcodeDetector({ formats: ['qr_code'] });
-        const codes = await detector.detect(scan.video);
-        for (const code of codes) {
-          const val = code.rawValue;
-          if (val && val.startsWith('A:')) {
-            clearInterval(checkInterval);
-            scan.stop();
-            await handleAnswerQR(val);
-            return;
-          }
-        }
-      } catch (e) {}
-    }
-  }, 500);
-}
-
-async function handleAnswerQR(answerCode) {
-  if (!S.pendingOffer) return;
-
-  const { pc, dc } = S.pendingOffer;
-  const sdp = await decompressSDP(answerCode.slice(2));
-  await acceptAnswer(pc, sdp);
-
-  const peerId = crypto.randomUUID();
-  setupDC(peerId, dc);
-  addPeer(peerId, pc, dc, null);
-
-  S.pendingOffer = null;
-  $('conn-status').innerHTML = '<span class="dot"></span> connecting...';
-}
-
-async function doJoinWithQR(roomId, keyStr) {
-  S.nick = S.nick || localStorage.getItem('ghost-nick') || ('ghost-' + rnd(2));
-  localStorage.setItem('ghost-nick', S.nick);
-  S.roomId = roomId;
-  S.roomKey = await impKey(keyStr);
-  saveRoomState();
-
-  $('app').innerHTML = `
-    <div class="center"><div class="box">
-      <h1>Connecting...</h1>
-      <p style="color:var(--dim);font-size:12px">Scan the host's QR code</p>
-      <div id="host-scanner" style="margin:16px 0"></div>
-      <div id="answer-qr" style="text-align:center;margin:16px 0;display:none"></div>
-      <div class="status" id="conn-status"><span class="dot"></span> scanning...</div>
-      <div class="actions"><button id="btn-cancel">Cancel</button></div>
-    </div></div>`;
-
-  $('btn-cancel').onclick = showHome;
-
-  // Scan for host's offer
-  const scan = await startQRScanner(null);
-  if (!scan) {
-    $('conn-status').innerHTML = '<span class="dot"></span> camera error';
-    return;
-  }
-
-  $('host-scanner').appendChild(scan.video);
-
-  const detector = 'BarcodeDetector' in window ? new BarcodeDetector({ formats: ['qr_code'] }) : null;
-  let found = false;
-
-  const check = async () => {
-    if (found) return;
-
-    if (detector) {
-      try {
-        const codes = await detector.detect(scan.video);
-        for (const code of codes) {
-          const val = code.rawValue;
-          if (val && val.startsWith('O:')) {
-            found = true;
-            scan.stop();
-            $('host-scanner').style.display = 'none';
-            await handleHostOfferQR(val);
-            return;
-          }
-        }
-      } catch (e) {}
-    }
-    requestAnimationFrame(check);
-  };
-  check();
-}
-
-async function handleHostOfferQR(offerCode) {
-  const sdp = await decompressSDP(offerCode.slice(2));
-  const { pc, code, dcPromise } = await acceptOffer(sdp);
-
-  // Show answer QR immediately
-  $('answer-qr').style.display = 'block';
-  $('answer-qr').innerHTML = '<div class="qr-wrap" style="padding:12px">' + makeQR(code, 3) + '</div>';
-  $('conn-status').innerHTML = '<span class="dot"></span> show this QR to host';
-
-  const peerId = crypto.randomUUID();
-  const dc = await dcPromise;
-  setupDC(peerId, dc);
-  addPeer(peerId, pc, dc, null);
-}
-
-// ============ SIMPLIFIED FLOW ============
-// Host creates room -> QR with URL only -> Phone scans -> Both use WebSocket to exchange SDP
 
 async function doCreate(){
-  S.nick=$('nick-in').value.trim()||'ghost-'+rnd(2);
+  S.nick=$('nick-in').value.trim()||'Ghost'+rnd(2);
   localStorage.setItem('ghost-nick',S.nick);
-  S.roomId=rnd(4);
-  S.roomKey=await genKey();
-  S.isAdmin=true;
-  const keyStr=await expKey(S.roomKey);
-  history.replaceState(null,'','#'+S.roomId+'.'+keyStr);
-  saveRoomState();
+  S.room=rnd(4);
+  S.key=await genKey();
+  const keyStr=await expKey(S.key);
 
-  // Show QR with just the URL
-  const shareUrl = location.origin + location.pathname + '#' + S.roomId + '.' + keyStr;
+  const pc=new RTCPeerConnection({iceServers:STUN});
+  const dc=pc.createDataChannel('chat',{ordered:true});
+  setupDC(dc);
 
-  $('app').innerHTML=`
-    <div class="center"><div class="box">
-      <h1>Room Ready</h1>
-      <p style="color:var(--dim);font-size:12px;margin-bottom:16px">Scan to join, or share the link</p>
-      <div id="invite-qr" style="text-align:center;margin:16px 0"></div>
-      <div class="link-box" style="margin-top:12px"><span id="room-link"></span><button id="btn-copy-link">copy</button></div>
-      <div class="status" id="conn-status" style="margin-top:16px"><span class="dot"></span> waiting for peer</div>
-    </div></div>`;
+  const offer=await pc.createOffer();
+  await pc.setLocalDescription(offer);
+  await new Promise(r=>{if(pc.iceGatheringState==='complete')r();else pc.onicegatheringstatechange=()=>{if(pc.iceGatheringState==='complete')r()};setTimeout(r,3000)});
 
-  // Show QR
-  $('invite-qr').innerHTML='<div class="qr-wrap" style="padding:16px">'+makeQR(shareUrl,4)+'</div>';
-  $('room-link').textContent = shareUrl;
-  $('btn-copy-link').onclick = () => {navigator.clipboard.writeText(shareUrl); toast('Link copied')};
+  const code='G:'+S.room+'.'+keyStr+'.'+await compress(pc.localDescription.sdp);
+  S.pc=pc;
 
-  // Connect to signaling server
-  connectSignaling(S.roomId, async (msg) => {
-    if (msg.type === 'join') {
-      // A peer joined, send them our offer
-      const {pc, dc, code} = await createOffer();
-      S.pendingPC = {pc, dc, code};
+  $('app').innerHTML=`<div class="center"><div class="box">
+    <h1>Share This Code</h1>
+    <p>Send to the other person any way you want.</p>
+    <div class="qr-wrap" id="qr"></div>
+    <div class="code-box" id="code"></div>
+    <button onclick="copyCode()">Copy</button>
+    <button class="secondary" onclick="showAnswer()">I've Been Sent a Code</button>
+  </div></div>`;
 
-      // Store for when answer comes back
-      S.pendingPC.pc = pc;
-      S.pendingPC.dc = dc;
-
-      signalSend({type: 'offer', sdp: code.slice(2)});
-
-      $('conn-status').innerHTML = '<span class="dot"></span> peer found, sending offer...';
-    }
-    else if (msg.type === 'answer' && S.pendingPC) {
-      // Got answer back
-      await acceptAnswer(S.pendingPC.pc, msg.sdp);
-
-      const peerId = crypto.randomUUID();
-      setupDC(peerId, S.pendingPC.dc);
-      addPeer(peerId, S.pendingPC.pc, S.pendingPC.dc, null);
-
-      $('conn-status').innerHTML = '<span class="dot"></span> connecting...';
-      S.pendingPC = null;
-    }
-  });
-
-  // Load history
-  const old = await loadMessages();
-  if(old.length) S.messages = old.filter(m => m.ts > Date.now() - MSG_TTL);
+  $('code').textContent=code;
+  const qr=qrcode(0,'M');qr.addData(code);qr.make();
+  $('qr').innerHTML=qr.createSvgTag({cellSize:4,margin:2});
+  window.currentCode=code;
 }
 
-function showScanAnswer(pc){
-  $('app').innerHTML = `
-    <div class="center"><div class="box">
-      <h1>Scan Response</h1>
-      <p style="color:var(--dim);font-size:12px">Scan the joining peer's response QR</p>
-      <div id="scanner-mount" style="margin:16px 0"></div>
-      <button id="btn-start-scan" class="scan-btn">Start Camera</button>
-      <div class="actions"><button id="btn-back">Back</button></div>
-      <div class="status" id="conn-status"><span class="dot"></span> waiting...</div>
-    </div></div>`;
+function copyCode(){navigator.clipboard.writeText(window.currentCode);}
 
-  $('btn-back').onclick = () => history.back();
-
-  $('btn-start-scan').onclick = async () => {
-    const res = await startQRScanner(null);
-    if(res){
-      $('scanner-mount').appendChild(res.video);
-      $('btn-start-scan').textContent = 'Stop';
-      // Poll for scanned value
-      const check = setInterval(async () => {
-        // Look for answer code in scanned data somehow
-        // For now, user needs to paste it
-      }, 500);
-    }
-  };
-}
-
-function showEnterAnswer(pc){
-  $('app').innerHTML = `
-    <div class="center"><div class="box">
-      <h1>Enter Response</h1>
-      <label>Paste the joining peer's response code</label>
-      <div class="code-box"><textarea id="peer-code" rows="3" placeholder="paste A: code here..."></textarea></div>
-      <div class="actions"><button id="btn-back">Back</button><button class="primary" id="btn-connect">Connect</button></div>
-    </div></div>`;
-
-  $('btn-back').onclick = () => history.back();
-  $('btn-connect').onclick = async () => {
-    const raw = $('peer-code').value.trim();
-    if(!raw || !raw.startsWith('A:')){toast('Paste a valid response code (starts with A:)'); return}
-    try{
-      const{sdp} = await parseCode(raw);
-      await acceptAnswer(pc, sdp);
-      $('conn-status').innerHTML = '<span class="dot"></span> connecting...';
-    }catch(e){toast('Invalid code: ' + e.message)}
-  };
-}
-
-function showJoinInput(){
-  const stored=localStorage.getItem('ghost-nick')||('ghost-'+rnd(2));
-  $('app').innerHTML=`
-    <div class="center"><div class="box">
-      <h1>Join Room</h1>
-      <p style="color:var(--dim);font-size:12px;margin-bottom:16px">Scan QR or paste room link</p>
-      <label>Nickname</label>
-      <input id="nick-in" value="${esc(stored)}" maxlength="20" spellcheck="false">
-      <div id="scanner-mount" style="margin:16px 0;text-align:center">
-        <button id="btn-scan-invite" class="scan-btn primary" style="padding:12px 24px">Scan QR Code</button>
-      </div>
-      <div class="code-box" style="margin-top:12px">
-        <textarea id="invite-input" rows="2" placeholder="Or paste room link here..."></textarea>
-      </div>
-      <div class="actions"><button class="primary" id="btn-join">Join</button><button id="btn-back">Back</button></div>
-    </div></div>`;
-
-  $('btn-back').onclick=showHome;
-
-  $('btn-scan-invite').onclick=async()=>{
-    const res=await startQRScanner($('invite-input'));
-    if(res){
-      $('scanner-mount').innerHTML='';
-      $('scanner-mount').appendChild(res.video);
-      // Auto-join when QR detected
-      const check=setInterval(()=>{
-        const val=$('invite-input').value;
-        if(!val)return;
-
-        if(val.includes('#')){
-          // URL-based join
-          clearInterval(check);
-          res.stop();
-          handleJoin(val);
-        }else if(val.startsWith('O:')){
-          // Direct QR offer (offline mode)
-          clearInterval(check);
-          res.stop();
-          const hash=location.hash.slice(1);
-          const[roomId,keyStr]=hash.split('.');
-          if(roomId&&keyStr){
-            doJoinWithQR(roomId,keyStr);
-          }
-        }
-      },500);
-    }
-  };
-
-  $('btn-join').onclick=()=>handleJoin($('invite-input').value.trim());
-}
-
-async function handleJoin(input){
-  if(!input){toast('Enter a room link');return}
-
-  // Extract room from URL
-  let roomId=null, keyStr=null;
-
-  if(input.includes('#')){
-    const hash=input.split('#')[1];
-    const parts=hash.split('.');
-    if(parts.length===2){
-      roomId=parts[0];
-      keyStr=parts[1];
-    }
-  }
-
-  if(!roomId||!keyStr){toast('Invalid room link');return}
-
-  S.nick=$('nick-in').value.trim()||'ghost-'+rnd(2);
+function showJoin(){
+  S.nick=$('nick-in').value.trim()||'Ghost'+rnd(2);
   localStorage.setItem('ghost-nick',S.nick);
-  S.roomId=roomId;
-  S.roomKey=await impKey(keyStr);
-  location.hash=roomId+'.'+keyStr;
-  saveRoomState();
-
-  // Show connecting UI
-  $('app').innerHTML=`
-    <div class="center"><div class="box">
-      <h1>Joining...</h1>
-      <p>Room: ${esc(roomId)}</p>
-      <div class="status" style="margin-top:16px"><span class="dot"></span> connecting to signaling...</div>
-    </div></div>`;
-
-  // Connect to signaling and wait for host
-  connectSignaling(roomId, async (msg) => {
-    if(msg.type==='peers'&&msg.count>=1){
-      const cs=$('conn-status');if(cs)cs.textContent='found peer, exchanging keys...';
-    }
-    else if(msg.type==='offer'){
-      // Got offer from host, create answer
-      const{pc,code,dcPromise}=await acceptOffer(msg.sdp);
-
-      signalSend({type:'answer',sdp:code.slice(2)});
-
-      const peerId=crypto.randomUUID();
-      const dc=await dcPromise;
-      setupDC(peerId,dc);
-      addPeer(peerId,pc,dc,null);
-    }
-  });
-
-  // Signal that we joined
-  setTimeout(()=>signalSend({type:'join'}),500);
-
-  // Load history
-  const old=await loadMessages();
-  if(old.length)S.messages=old.filter(m=>m.ts>Date.now()-MSG_TTL);
+  $('app').innerHTML=`<div class="center"><div class="box">
+    <h1>Enter Code</h1>
+    <p>Paste the code they sent you.</p>
+    <textarea id="code-in" rows="3" placeholder="G:..."></textarea>
+    <button onclick="doJoin()">Connect</button>
+    <button class="secondary" onclick="showHome()">Back</button>
+  </div></div>`;
+  $('code-in').focus();
 }
 
-async function doJoinWithOffer(invite){
-  S.roomId=invite.r;
-  S.roomKey=await impKey(invite.k);
-  saveRoomState();
+async function doJoin(){
+  const input=$('code-in').value.trim();
+  if(!input.startsWith('G:')){alert('Invalid code');return}
+  const parts=input.slice(2).split('.');
+  if(parts.length!==3){alert('Invalid code');return}
 
-  // Accept the offer directly
-  try{
-    const{pc,code,dcPromise}=await acceptOffer(invite.o);
+  S.room=parts[0];
+  S.key=await impKey(parts[1]);
+  const offerSDP=await decompress(parts[2]);
 
-    // Show connecting UI briefly
-    $('app').innerHTML=`
-      <div class="center"><div class="box">
-        <h1>Connecting...</h1>
-        <p>Joining ${esc(S.roomId)}</p>
-        <div class="status"><span class="dot"></span> establishing connection</div>
-      </div></div>`;
+  const pc=new RTCPeerConnection({iceServers:STUN});
+  let dcResolve;
+  const dcPromise=new Promise(r=>dcResolve=r);
+  pc.ondatachannel=e=>dcResolve(e.channel);
 
-    const peerId=crypto.randomUUID();
-    const dc=await dcPromise;
-    setupDC(peerId,dc);
-    addPeer(peerId,pc,dc,invite.n||null);
+  await pc.setRemoteDescription({type:'offer',sdp:offerSDP});
+  const answer=await pc.createAnswer();
+  await pc.setLocalDescription(answer);
+  await new Promise(r=>{if(pc.iceGatheringState==='complete')r();else pc.onicegatheringstatechange=()=>{if(pc.iceGatheringState==='complete')r()};setTimeout(r,3000)});
 
-    // Load history
-    const old=await loadMessages();
-    if(old.length)S.messages=old.filter(m=>m.ts>Date.now()-MSG_TTL);
+  S.pc=pc;
+  const answerCode='A:'+await compress(pc.localDescription.sdp);
 
-  }catch(e){
-    toast('Connection failed: '+e.message);
-    showHome();
-  }
+  $('app').innerHTML=`<div class="center"><div class="box">
+    <h1>Show This Back</h1>
+    <p>They need to scan or paste this to complete.</p>
+    <div class="qr-wrap" id="qr"></div>
+    <div class="code-box" id="code"></div>
+    <button onclick="copyCode()">Copy</button>
+  </div></div>`;
+
+  $('code').textContent=answerCode;
+  window.currentCode=answerCode;
+  const qr=qrcode(0,'M');qr.addData(answerCode);qr.make();
+  $('qr').innerHTML=qr.createSvgTag({cellSize:4,margin:2});
+
+  const dc=await dcPromise;
+  setupDC(dc);
 }
 
-async function doJoin(roomId,keyStr){
-  // Legacy URL-based join - used when opening a shared link
-  S.roomId=roomId;
-  S.roomKey=await impKey(keyStr);
-  S.nick=S.nick||localStorage.getItem('ghost-nick')||('ghost-'+rnd(2));
-  localStorage.setItem('ghost-nick',S.nick);
-  saveRoomState();
+function showAnswer(){
+  $('app').innerHTML=`<div class="center"><div class="box">
+    <h1>Enter Their Response</h1>
+    <p>Paste the code they sent back.</p>
+    <textarea id="ans-in" rows="3" placeholder="A:..."></textarea>
+    <button onclick="acceptAnswer()">Connect</button>
+  </div></div>`;
+}
 
-  $('app').innerHTML=`
-    <div class="center"><div class="box">
-      <h1>Join Room</h1>
-      <p>Waiting for host to share their invite...</p>
-      <p style="color:var(--dim);font-size:12px;margin-top:16px">Room: ${esc(roomId)}</p>
-      <div class="status" style="margin-top:20px"><span class="dot"></span> waiting for peer</div>
-    </div></div>`;
+async function acceptAnswer(){
+  const input=$('ans-in').value.trim();
+  if(!input.startsWith('A:')){alert('Invalid code');return}
+  const answerSDP=await decompress(input.slice(2));
+  await S.pc.setRemoteDescription({type:'answer',sdp:answerSDP});
+}
 
-  // In the new flow, we need the host to send us an offer via the unified invite
-  // This legacy path is for when someone opens a room link but hasn't scanned the QR yet
-  // We'll wait for them to scan the host's QR
+function setupDC(dc){
+  S.dc=dc;
+  dc.onopen=()=>showChat();
+  dc.onmessage=async e=>{
+    const msg=JSON.parse(await dec(S.key,e.data));
+    addMsg(msg.nick,msg.text,false);
+  };
 }
 
 function showChat(){
-  $('app').innerHTML=`
-    <div id="chat-view">
-      <div id="chat-header">
-        <span class="room-name">#${esc(S.roomId)}</span>
-        <span class="peer-count" id="peer-count">${S.peers.size} peer${S.peers.size!==1?'s':''}</span>
-        <span class="spacer"></span>
-        <button id="btn-invite" title="Invite">+</button>
-        <button id="btn-members" title="Members">peers</button>
-        ${S.isAdmin?'<button class="danger" id="btn-destroy" title="Destroy room">destroy</button>':''}
-      </div>
-      <div id="messages"></div>
-      <div id="typing-indicator" style="padding:4px 16px;font-size:11px;color:var(--dim);height:20px;"></div>
-      <div id="chat-input">
-        <label class="file-btn" title="Send file">&#128206;<input type="file" id="file-in" class="hidden"></label>
-        <input id="msg-in" placeholder="type a message..." autocomplete="off" spellcheck="false">
-        <button id="btn-send">send</button>
-      </div>
-    </div>
-    <div class="members-panel hidden" id="members-panel">
-      <button class="close-btn" id="btn-close-members">&times;</button>
-      <h3>Members</h3>
-      <div id="member-list"></div>
-      <div class="invite-section">
-        <label>Add Peer</label>
-        <p style="color:var(--dim);font-size:11px;margin-bottom:8px">Exchange codes with a new peer</p>
-        <button id="btn-new-offer" style="width:100%">Generate Invite Code</button>
-        <div id="invite-area" class="hidden" style="margin-top:8px">
-          <div class="code-box"><textarea id="invite-code" readonly rows="2" style="font-size:10px"></textarea><button id="btn-copy-invite">copy</button></div>
-          <label style="margin-top:8px">Peer's response</label>
-          <div class="code-box"><textarea id="invite-answer" rows="2" placeholder="paste response..." style="font-size:10px"></textarea></div>
-          <button id="btn-accept-invite" style="width:100%;margin-top:4px">Accept</button>
-        </div>
-      </div>
-    </div>`;
-
-  // render stored messages
-  renderMessages();
-
-  // send history to newly connected peer
-  if(S.messages.length>0){
-    const recent=S.messages.filter(m=>m.ts>Date.now()-MSG_TTL);
-    // send to the most recently connected peer
-    const lastPeer=[...S.peers.keys()].pop();
-    if(lastPeer)sendTo(lastPeer,{type:'sync',messages:recent});
-  }
-
-  // event handlers
-  $('btn-send').onclick=()=>{broadcastTyping(false);doSend();};
-  $('msg-in').onkeydown=e=>{
-    if(e.key==='Enter'&&!e.shiftKey){broadcastTyping(false);doSend();}
-    else onInputTyping();
-  };
-  $('btn-members').onclick=()=>$('members-panel').classList.toggle('hidden');
-  $('btn-close-members').onclick=()=>$('members-panel').classList.add('hidden');
-  $('file-in').onchange=e=>{if(e.target.files[0])sendFile(e.target.files[0]);e.target.value=''};
-
-  // invite flow (for adding more peers from chat view)
-  $('btn-new-offer').onclick=async()=>{
-    $('invite-area').classList.remove('hidden');
-    const{pc,dc,code}=await createOffer();
-    $('invite-code').value=code;
-    $('btn-copy-invite').onclick=()=>{navigator.clipboard.writeText(code);toast('Code copied')};
-
-    const peerId=crypto.randomUUID();
-    setupDC(peerId,dc);
-    addPeer(peerId,pc,dc,null);
-
-    $('btn-accept-invite').onclick=async()=>{
-      const raw=$('invite-answer').value.trim();
-      if(!raw||!raw.startsWith('A:')){toast('Need response code (A:...)');return}
-      const{sdp}=await parseCode(raw);
-      await acceptAnswer(pc,sdp);
-      toast('Connecting...');
-    };
-  };
-
-  $('btn-invite').onclick=()=>{
-    $('members-panel').classList.remove('hidden');
-  };
-
-  if(S.isAdmin&&$('btn-destroy')){
-    $('btn-destroy').onclick=()=>{
-      if(confirm('Destroy this room for everyone?')){
-        broadcast({type:'destroy',from:S.myId});
-        addSysMsg('Room destroyed.');
-        setTimeout(()=>{clearRoom();showHome()},1500);
-      }
-    };
-  }
-
-  // drag and drop files
-  const msgArea=$('messages');
-  msgArea.ondragover=e=>{e.preventDefault();msgArea.style.background='#1a2332'};
-  msgArea.ondragleave=()=>{msgArea.style.background=''};
-  msgArea.ondrop=e=>{e.preventDefault();msgArea.style.background='';if(e.dataTransfer.files[0])sendFile(e.dataTransfer.files[0])};
-
-  updateChatUI();
-  cleanOldMessages();
+  $('app').innerHTML=`<div id="messages"></div>
+  <div id="input-area">
+    <input id="msg-input" placeholder="Type a message..." autocomplete="off">
+    <button onclick="sendMsg()">Send</button>
+  </div>`;
+  $('msg-input').onkeypress=e=>{if(e.key==='Enter')sendMsg()};
+  $('msg-input').focus();
+  addMsg('System','Connected! Chat is ephemeral.',false);
 }
 
-function doSend(){
-  const input=$('msg-in');
+async function sendMsg(){
+  const input=$('msg-input');
   const text=input.value.trim();
   if(!text)return;
   input.value='';
-  const msg={id:crypto.randomUUID(),type:'chat',from:S.myId,nick:S.nick,text,ts:Date.now()};
-  addChatMsg(msg);
-  broadcast(msg);
+  const msg={nick:S.nick,text,time:Date.now()};
+  S.dc.send(await enc(S.key,JSON.stringify(msg)));
+  addMsg(S.nick,text,true);
 }
 
-function renderMessages(){
-  const el=$('messages');
-  if(!el)return;
-  el.innerHTML='';
-  for(const m of S.messages)renderMessage(m);
-  scrollBottom();
-}
-
-function renderMessage(msg){
-  const el=$('messages');
-  if(!el)return;
+function addMsg(nick,text,self){
   const div=document.createElement('div');
-  div.className='msg'+(msg.type==='sys'?' sys':'')+(msg.from===S.myId?' self':'');
-  const t=new Date(msg.ts).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
-  if(msg.type==='sys'){
-    div.innerHTML=`<span class="ts">[${t}]</span> -- ${esc(msg.text)}`;
-  }else{
-    let content=esc(msg.text);
-    if(msg.fileUrl){
-      content=`<a class="file-link" href="${msg.fileUrl}" download="${esc(msg.fileName)}">${esc(msg.text)}</a>`;
-    }
-    div.innerHTML=`<span class="ts">[${t}]</span> <span class="nick">${esc(msg.nick)}:</span> ${content}`;
-  }
-  el.appendChild(div);
+  div.className='msg'+(self?' self':'');
+  div.innerHTML=`<div class="nick">${nick}</div><div>${text}</div>`;
+  const msgs=document.getElementById('messages');
+  if(msgs)msgs.appendChild(div);
+  msgs.scrollTop=msgs.scrollHeight;
 }
 
-function scrollBottom(){
-  const el=$('messages');
-  if(el)el.scrollTop=el.scrollHeight;
-}
-
-// ============ TYPING INDICATORS ============
-function handleTyping(peerId, isTyping){
-  if(isTyping)S.typing.add(peerId);
-  else S.typing.delete(peerId);
-  updateTypingIndicator();
-}
-
-function updateTypingIndicator(){
-  const el=document.getElementById('typing-indicator');
-  if(!el)return;
-  if(S.typing.size===0){el.textContent='';return;}
-
-  const names=[...S.typing].map(id=>{
-    const p=S.peers.get(id);
-    return p?.nick||'someone';
-  });
-
-  if(names.length===1)el.textContent=names[0]+' is typing...';
-  else if(names.length===2)el.textContent=names.join(' and ')+' are typing...';
-  else el.textContent=names[0]+' and '+(names.length-1)+' others are typing...';
-}
-
-function broadcastTyping(isTyping){
-  broadcast({type:'typing',typing:isTyping});
-}
-
-function onInputTyping(){
-  broadcastTyping(true);
-  if(S.typingTimer)clearTimeout(S.typingTimer);
-  S.typingTimer=setTimeout(()=>broadcastTyping(false),3000);
-}
-
-function updateChatUI(){
-  const pc=$('peer-count');
-  if(pc)pc.textContent=S.peers.size+' peer'+(S.peers.size!==1?'s':'');
-  const ml=$('member-list');
-  if(ml){
-    ml.innerHTML=`<div class="member"><span class="online"></span>${esc(S.nick)} (you)</div>`;
-    for(const[id,p]of S.peers){
-      ml.innerHTML+=`<div class="member"><span class="online"></span>${esc(p.nick||'connecting...')}</div>`;
-    }
-  }
-}
-
-// ============ PERSISTENCE ============
-function saveRoomState(){
-  if(S.roomId&&S.roomKey){
-    localStorage.setItem('ghost-room',JSON.stringify({
-      roomId:S.roomId,
-      key:location.hash.slice(1).split('.')[1]||'', // store key from hash
-      nick:S.nick,
-      ts:Date.now()
-    }));
-  }
-}
-function loadRoomState(){
-  try{
-    const raw=localStorage.getItem('ghost-room');
-    if(!raw)return null;
-    const data=JSON.parse(raw);
-    // expire after 7 days
-    if(Date.now()-data.ts>7*24*3600*1000){
-      localStorage.removeItem('ghost-room');
-      return null;
-    }
-    return data;
-  }catch(e){return null}
-}
-function clearRoomState(){
-  localStorage.removeItem('ghost-room');
-}
-
-// ============ RECONNECTION ============
-async function attemptReconnect(){
-  const state=loadRoomState();
-  if(!state)return false;
-
-  // need to re-establish WebRTC - we have room creds but not peer connections
-  // set hash so doJoin can work
-  location.hash=state.roomId+'.'+state.key;
-  S.nick=state.nick||localStorage.getItem('ghost-nick')||('ghost-'+rnd(2));
-
-  // show reconnection UI
-  $('app').innerHTML=`<div class="center"><div class="box">
-    <h1>Reconnecting...</h1>
-    <p>room: ${esc(state.roomId)}</p>
-    <div class="status"><span class="dot"></span> restoring connection</div>
-    <div class="actions"><button id="btn-cancel">Cancel</button></div>
-  </div></div>`;
-  $('btn-cancel').onclick=()=>{clearRoomState();showHome();};
-
-  // try to rejoin - but we need a new peer connection
-  // the old peers are gone, so we need to wait for someone to invite us
-  // or we need to advertise ourselves somehow
-
-  // for now: load messages and show "waiting for peer" UI
-  S.roomId=state.roomId;
-  S.roomKey=await impKey(state.key);
-  S.isAdmin=false; // can't be sure
-
-  const old=await loadMessages();
-  if(old.length)S.messages=old.filter(m=>m.ts>Date.now()-MSG_TTL);
-
-  showChat();
-  addSysMsg('Reconnected. Waiting for peers...');
-
-  // TODO: implement signaling server or DHT for re-discovery
-  // for now, user needs to re-share their code or get invited
-
-  return true;
-}
-
-// ============ INIT ============
-(async function init(){
-  const hash=location.hash.slice(1);
-  if(hash&&hash.includes('.')){
-    const[rid,key]=hash.split('.');
-    if(rid&&key){
-      S.nick=localStorage.getItem('ghost-nick')||('ghost-'+rnd(2));
-      await doJoin(rid,key);
-      return;
-    }
-  }
-
-  // check for saved room state
-  const state=loadRoomState();
-  if(state){
-    const reconnected=await attemptReconnect();
-    if(reconnected)return;
-  }
-
-  showHome();
-})();
-
-// service worker
-if('serviceWorker' in navigator){navigator.serviceWorker.register('sw.js').catch(()=>{})}
-
-// periodic cleanup
-setInterval(()=>{if(S.roomId)cleanOldMessages()},30*60*1000);
-
-// handle page unload
-window.onbeforeunload=()=>{
-  broadcast({type:'leave',peerId:S.myId,nick:S.nick});
-  saveRoomState(); // ensure room state is saved
-};
+showHome();
 </script>
 </body>
 </html>
