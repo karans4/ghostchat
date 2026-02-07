@@ -58,7 +58,8 @@ textarea{resize:none}
 #chat-input label.file-btn{cursor:pointer;color:var(--dim);padding:4px 8px;border:1px solid var(--b);border-radius:4px;font-size:16px}
 #chat-input label.file-btn:hover{color:var(--t);border-color:var(--acc)}
 .hidden{display:none!important}
-.qr-wrap{text-align:center;margin:12px 0;background:#fff;border-radius:8px;padding:12px;display:inline-block}
+.qr-wrap{text-align:center;margin:12px 0;background:#fff;border-radius:8px;padding:12px;display:inline-block;min-width:200px;min-height:200px}
+.qr-wrap svg{display:block;width:100%;height:auto;min-width:180px}
 .qr-wrap img{display:block;image-rendering:pixelated}
 .qr-row{display:flex;gap:8px;align-items:center;justify-content:center;flex-wrap:wrap;margin-top:8px}
 .scan-btn{display:inline-flex;align-items:center;gap:4px}
@@ -422,19 +423,19 @@ async function cleanOldMessages(){
 
 // ============ UI ============
 // ============ QR CODE ============
-function makeQR(text,size=4){
+function makeQR(text,size=6){
   try{
     const qr=qrcode(0,'M');
     qr.addData(text);
     qr.make();
-    return qr.createSvgTag({cellSize:size,margin:2,scalable:true});
+    return qr.createSvgTag({cellSize:size,margin:2});
   }catch(e){
     // data too long for QR, try with lower EC
     try{
       const qr=qrcode(0,'L');
       qr.addData(text);
       qr.make();
-      return qr.createSvgTag({cellSize:size,margin:2,scalable:true});
+      return qr.createSvgTag({cellSize:size,margin:2});
     }catch(e2){return '<div style="color:var(--dim);font-size:11px">Code too long for QR</div>'}
   }
 }
