@@ -994,7 +994,7 @@ async function handleJoin(input){
   // Connect to signaling and wait for host
   connectSignaling(roomId, async (msg) => {
     if(msg.type==='peers'&&msg.count>=1){
-      $('conn-status')?.textContent='found peer, exchanging keys...';
+      const cs=$('conn-status');if(cs)cs.textContent='found peer, exchanging keys...';
     }
     else if(msg.type==='offer'){
       // Got offer from host, create answer
