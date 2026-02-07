@@ -3,8 +3,8 @@
 import asyncio
 from playwright.async_api import async_playwright
 
-URL = 'https://karans4.github.io/ghostchat/'
-# URL = 'http://localhost:8091/ghost.html'
+# URL = 'https://karans4.github.io/ghostchat/'
+URL = 'http://localhost:8091/index.html'
 
 # iPhone 14 Pro dimensions and user agent
 MOBILE_VIEWPORT = {'width': 393, 'height': 852}
