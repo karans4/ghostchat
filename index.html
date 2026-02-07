@@ -22,12 +22,16 @@ button.secondary{background:transparent;color:var(--t);border:1px solid var(--b)
 button.secondary:hover{border-color:var(--acc)}
 .code-box{background:var(--bg);border:1px solid var(--b);border-radius:8px;padding:16px;font-family:monospace;font-size:12px;word-break:break-all;margin:16px 0}
 .qr-wrap{background:#fff;border-radius:8px;padding:16px;display:inline-block;margin:16px 0}
-#messages{position:fixed;top:0;left:0;right:0;bottom:80px;overflow-y:auto;padding:20px}
-#input-area{position:fixed;bottom:0;left:0;right:0;padding:16px 20px;background:var(--s);border-top:1px solid var(--b);display:flex;gap:12px}
-#msg-input{flex:1;margin:0}
-.msg{margin:8px 0;padding:12px 16px;background:var(--s);border-radius:12px;border:1px solid var(--b);max-width:80%}
-.msg.self{margin-left:auto;background:var(--b);border-color:var(--acc)}
-.msg .nick{font-size:11px;color:var(--dim);margin-bottom:4px}
+#messages{position:fixed;top:0;left:0;right:0;bottom:70px;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:8px}
+#input-area{position:fixed;bottom:0;left:0;right:0;padding:12px 16px;background:var(--s);border-top:1px solid var(--b);display:flex;gap:10px;align-items:center}
+#msg-input{flex:1;margin:0;background:var(--bg);border:1px solid var(--b);color:var(--t);padding:10px 14px;border-radius:20px;outline:none}
+#msg-input:focus{border-color:var(--acc)}
+#send-btn{width:auto;padding:10px 20px;margin:0;border-radius:20px}
+.msg{padding:10px 14px;background:var(--s);border-radius:16px;border:1px solid var(--b);max-width:75%;word-break:break-word;align-self:flex-start}
+.msg.self{align-self:flex-end;background:var(--acc);color:#000;border-color:var(--acc)}
+.msg.self .nick{color:rgba(0,0,0,0.6)}
+.msg .nick{font-size:11px;color:var(--dim);margin-bottom:2px;font-weight:600}
+.msg .text{font-size:14px;line-height:1.4}
 .hidden{display:none}
 </style>
 </head>
@@ -184,29 +188,37 @@ function showChat(){
   $('app').innerHTML=`<div id="messages"></div>
   <div id="input-area">
     <input id="msg-input" placeholder="Type a message..." autocomplete="off">
-    <button onclick="sendMsg()">Send</button>
+    <button id="send-btn" onclick="sendMsg()">Send</button>
   </div>`;
-  $('msg-input').onkeypress=e=>{if(e.key==='Enter')sendMsg()};
-  $('msg-input').focus();
+  const input=$('msg-input');
+  input.onkeypress=e=>{if(e.key==='Enter')sendMsg()};
+  input.focus();
   addMsg('System','Connected! Chat is ephemeral.',false);
 }
 
 async function sendMsg(){
   const input=$('msg-input');
+  const btn=$('send-btn');
   const text=input.value.trim();
   if(!text)return;
+  if(!S.dc||S.dc.readyState!=='open'){alert('Not connected yet');return;}
   input.value='';
-  const msg={nick:S.nick,text,time:Date.now()};
-  S.dc.send(await enc(S.key,JSON.stringify(msg)));
-  addMsg(S.nick,text,true);
+  btn.disabled=true;
+  try{
+    const msg={nick:S.nick,text,time:Date.now()};
+    S.dc.send(await enc(S.key,JSON.stringify(msg)));
+    addMsg(S.nick,text,true);
+  }catch(e){console.error(e);alert('Send failed');}
+  finally{btn.disabled=false;input.focus();}
 }
 
 function addMsg(nick,text,self){
   const div=document.createElement('div');
   div.className='msg'+(self?' self':'');
-  div.innerHTML=`<div class="nick">${nick}</div><div>${text}</div>`;
+  div.innerHTML=`<div class="nick">${nick}</div><div class="text">${text}</div>`;
   const msgs=document.getElementById('messages');
-  if(msgs)msgs.appendChild(div);
+  if(!msgs)return;
+  msgs.appendChild(div);
   msgs.scrollTop=msgs.scrollHeight;
 }
 
