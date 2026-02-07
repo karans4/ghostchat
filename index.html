@@ -195,7 +195,25 @@ input::placeholder,textarea::placeholder{color:var(--text-secondary)}
   padding:20px;
   display:inline-block;
   margin:16px 0;
-  box-shadow:0 8px 32px rgba(0,0,0,0.3)
+  box-shadow:0 8px 32px rgba(0,0,0,0.3);
+  text-decoration:none;
+  cursor:pointer
+}
+
+.qr-wrap:hover{
+  transform:scale(1.02);
+  box-shadow:0 12px 40px rgba(0,0,0,0.4)
+}
+
+a.code-box{
+  display:block;
+  color:var(--accent);
+  text-decoration:none;
+  cursor:pointer
+}
+
+a.code-box:hover{
+  border-color:var(--accent)
 }
 
 /* Chat UI */
@@ -681,6 +699,8 @@ async function doCreate(){
 
   const roomKeyStr=await expAESKey(S.roomKey);
   const code='G:'+S.roomId+'.'+roomKeyStr+'.'+S.myPubKey+'.'+await compress(pc.localDescription.sdp);
+  const baseUrl=location.origin+location.pathname;
+  const link=baseUrl+'#'+encodeURIComponent(code);
   S.pc=pc;
 
   saveSession();
@@ -688,17 +708,18 @@ async function doCreate(){
   $('app').innerHTML=`<div class="center"><div class="card">
     <div class="logo admin">👑</div>
     <h1>Admin Room Created</h1>
-    <p class="subtitle">Share this invite code.<br>Expires in 24 hours.</p>
-    <div class="qr-wrap" id="qr"></div>
-    <div class="code-box" id="code"></div>
-    <button class="btn btn-primary" onclick="copyCode()">Copy Code</button>
+    <p class="subtitle">Share this invite link.<br>Expires in 24 hours.</p>
+    <a href="${link}" class="qr-wrap" id="qr" title="Click or scan to join"></a>
+    <a href="${link}" class="code-box" id="code"></a>
+    <button class="btn btn-primary" onclick="copyLink()">Copy Link</button>
     <button class="btn btn-secondary" onclick="showAnswer()">Enter Reply Code</button>
     <button class="btn btn-secondary" onclick="showHome()">Back</button>
   </div></div>`;
 
-  $('code').textContent=code;
+  $('code').textContent=link;
+  window.currentLink=link;
   window.currentCode=code;
-  const qr=qrcode(0,'L');qr.addData(code);qr.make();
+  const qr=qrcode(0,'L');qr.addData(link);qr.make();
   $('qr').innerHTML=qr.createSvgTag({cellSize:3,margin:1});
 }
 
@@ -742,6 +763,8 @@ async function doJoin(){
 
   S.pc=pc;
   const answerCode='A:'+S.myPubKey+'.'+await compress(pc.localDescription.sdp);
+  const baseUrl=location.origin+location.pathname;
+  const link=baseUrl+'#A='+encodeURIComponent(answerCode);
 
   saveSession();
 
@@ -749,14 +772,15 @@ async function doJoin(){
     <div class="logo">✉️</div>
     <h1>Send Reply</h1>
     <p class="subtitle">Give this back to the admin.</p>
-    <div class="qr-wrap" id="qr"></div>
-    <div class="code-box" id="code"></div>
-    <button class="btn btn-primary" onclick="copyCode()">Copy Code</button>
+    <a href="${link}" class="qr-wrap" id="qr" title="Click or scan"></a>
+    <a href="${link}" class="code-box" id="code"></a>
+    <button class="btn btn-primary" onclick="copyLink()">Copy Link</button>
   </div></div>`;
 
-  $('code').textContent=answerCode;
+  $('code').textContent=link;
+  window.currentLink=link;
   window.currentCode=answerCode;
-  const qr=qrcode(0,'L');qr.addData(answerCode);qr.make();
+  const qr=qrcode(0,'L');qr.addData(link);qr.make();
   $('qr').innerHTML=qr.createSvgTag({cellSize:3,margin:1});
 
   const dc=await dcPromise;
@@ -796,6 +820,7 @@ async function waitICE(pc){
 }
 
 function copyCode(){navigator.clipboard.writeText(window.currentCode);const btn=document.querySelector('.btn-primary');btn.textContent='Copied!';setTimeout(()=>btn.textContent='Copy Code',2000);}
+function copyLink(){navigator.clipboard.writeText(window.currentLink);const btn=document.querySelector('.btn-primary');btn.textContent='Copied!';setTimeout(()=>btn.textContent='Copy Link',2000);}
 
 // ============== CHAT UI ==============
 function showChat(){
@@ -1264,7 +1289,33 @@ function sendToPeer(pubKey,msg){
 }
 
 // ============== INIT ==============
-showHome();
+function checkUrlHash(){
+  const hash=location.hash.slice(1);
+  if(!hash)return false;
+
+  if(hash.startsWith('A=')){
+    // Answer code for admin
+    const code=decodeURIComponent(hash.slice(2));
+    setTimeout(()=>{
+      showAnswer();
+      $('ans-in').value=code;
+    },100);
+    return true;
+  }else{
+    // Invite code for joiner
+    const code=decodeURIComponent(hash);
+    if(code.startsWith('G:')){
+      setTimeout(()=>{
+        showJoin();
+        $('code-in').value=code;
+      },100);
+      return true;
+    }
+  }
+  return false;
+}
+
+if(!checkUrlHash())showHome();
 </script>
 </body>
 </html>
