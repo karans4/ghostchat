@@ -307,6 +307,7 @@ function handleMsg(fromPeer,msg){
     case 'file-chunk': handleFileChunk(msg); break;
     case 'destroy':
       addSysMsg('Room destroyed by admin. Clearing data...');
+      clearRoomState();
       setTimeout(()=>{clearRoom();showHome()},2000);
       break;
     case 'nick-update':
@@ -501,6 +502,7 @@ async function doCreate(){
   S.isAdmin=true;
   const keyStr=await expKey(S.roomKey);
   history.replaceState(null,'','#'+S.roomId+'.'+keyStr);
+  saveRoomState();
 
   $('app').innerHTML=`
     <div class="center"><div class="box">
@@ -599,6 +601,7 @@ async function doJoin(roomId,keyStr){
   S.roomKey=await impKey(keyStr);
   S.nick=S.nick||localStorage.getItem('ghost-nick')||('ghost-'+rnd(2));
   localStorage.setItem('ghost-nick',S.nick);
+  saveRoomState();
 
   $('app').innerHTML=`
     <div class="center"><div class="box">
@@ -812,6 +815,74 @@ function updateChatUI(){
   }
 }
 
+// ============ PERSISTENCE ============
+function saveRoomState(){
+  if(S.roomId&&S.roomKey){
+    localStorage.setItem('ghost-room',JSON.stringify({
+      roomId:S.roomId,
+      key:location.hash.slice(1).split('.')[1]||'', // store key from hash
+      nick:S.nick,
+      ts:Date.now()
+    }));
+  }
+}
+function loadRoomState(){
+  try{
+    const raw=localStorage.getItem('ghost-room');
+    if(!raw)return null;
+    const data=JSON.parse(raw);
+    // expire after 7 days
+    if(Date.now()-data.ts>7*24*3600*1000){
+      localStorage.removeItem('ghost-room');
+      return null;
+    }
+    return data;
+  }catch(e){return null}
+}
+function clearRoomState(){
+  localStorage.removeItem('ghost-room');
+}
+
+// ============ RECONNECTION ============
+async function attemptReconnect(){
+  const state=loadRoomState();
+  if(!state)return false;
+
+  // need to re-establish WebRTC - we have room creds but not peer connections
+  // set hash so doJoin can work
+  location.hash=state.roomId+'.'+state.key;
+  S.nick=state.nick||localStorage.getItem('ghost-nick')||('ghost-'+rnd(2));
+
+  // show reconnection UI
+  $('app').innerHTML=`<div class="center"><div class="box">
+    <h1>Reconnecting...</h1>
+    <p>room: ${esc(state.roomId)}</p>
+    <div class="status"><span class="dot"></span> restoring connection</div>
+    <div class="actions"><button id="btn-cancel">Cancel</button></div>
+  </div></div>`;
+  $('btn-cancel').onclick=()=>{clearRoomState();showHome();};
+
+  // try to rejoin - but we need a new peer connection
+  // the old peers are gone, so we need to wait for someone to invite us
+  // or we need to advertise ourselves somehow
+
+  // for now: load messages and show "waiting for peer" UI
+  S.roomId=state.roomId;
+  S.roomKey=await impKey(state.key);
+  S.isAdmin=false; // can't be sure
+
+  const old=await loadMessages();
+  if(old.length)S.messages=old.filter(m=>m.ts>Date.now()-MSG_TTL);
+
+  showChat();
+  addSysMsg('Reconnected. Waiting for peers...');
+
+  // TODO: implement signaling server or DHT for re-discovery
+  // for now, user needs to re-share their code or get invited
+
+  return true;
+}
+
 // ============ INIT ============
 (async function init(){
   const hash=location.hash.slice(1);
@@ -823,6 +894,14 @@ function updateChatUI(){
       return;
     }
   }
+
+  // check for saved room state
+  const state=loadRoomState();
+  if(state){
+    const reconnected=await attemptReconnect();
+    if(reconnected)return;
+  }
+
   showHome();
 })();
 
@@ -835,6 +914,7 @@ setInterval(()=>{if(S.roomId)cleanOldMessages()},30*60*1000);
 // handle page unload
 window.onbeforeunload=()=>{
   broadcast({type:'leave',peerId:S.myId,nick:S.nick});
+  saveRoomState(); // ensure room state is saved
 };
 </script>
 </body>
