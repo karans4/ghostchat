@@ -89,8 +89,13 @@ async function doCreate(){
   </div></div>`;
 
   $('code').textContent=code;
-  const qr=qrcode(0,'M');qr.addData(code);qr.make();
-  $('qr').innerHTML=qr.createSvgTag({cellSize:4,margin:2});
+  // Truncate display if too long
+  if(code.length>200){
+    $('code').textContent=code.slice(0,100)+'...'+code.slice(-50)+'\n('+code.length+' chars - use copy button)';
+  }
+  // Smaller QR
+  const qr=qrcode(0,'L');qr.addData(code);qr.make();
+  $('qr').innerHTML=qr.createSvgTag({cellSize:2,margin:1});
   window.currentCode=code;
 }
 
@@ -142,8 +147,9 @@ async function doJoin(){
 
   $('code').textContent=answerCode;
   window.currentCode=answerCode;
-  const qr=qrcode(0,'M');qr.addData(answerCode);qr.make();
-  $('qr').innerHTML=qr.createSvgTag({cellSize:4,margin:2});
+  // Smaller QR for answer too
+  const qr=qrcode(0,'L');qr.addData(answerCode);qr.make();
+  $('qr').innerHTML=qr.createSvgTag({cellSize:2,margin:1});
 
   const dc=await dcPromise;
   setupDC(dc);
