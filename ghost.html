@@ -58,6 +58,14 @@ textarea{resize:none}
 #chat-input label.file-btn{cursor:pointer;color:var(--dim);padding:4px 8px;border:1px solid var(--b);border-radius:4px;font-size:16px}
 #chat-input label.file-btn:hover{color:var(--t);border-color:var(--acc)}
 .hidden{display:none!important}
+.qr-wrap{text-align:center;margin:12px 0;background:#fff;border-radius:8px;padding:12px;display:inline-block}
+.qr-wrap img{display:block;image-rendering:pixelated}
+.qr-row{display:flex;gap:8px;align-items:center;justify-content:center;flex-wrap:wrap;margin-top:8px}
+.scan-btn{display:inline-flex;align-items:center;gap:4px}
+video.scanner{width:100%;max-width:300px;border-radius:8px;margin:8px auto;display:block;background:#000}
+.tab-row{display:flex;gap:0;margin-bottom:12px}
+.tab-row button{flex:1;border-radius:0;border-bottom:2px solid transparent;background:none;color:var(--dim)}
+.tab-row button.active{color:var(--acc);border-bottom-color:var(--acc)}
 .members-panel{position:fixed;top:0;right:0;width:240px;height:100vh;background:var(--s);border-left:1px solid var(--b);padding:16px;z-index:10;display:flex;flex-direction:column}
 .members-panel h3{margin-bottom:12px;font-size:13px;color:#fff}
 .members-panel .member{padding:4px 0;font-size:12px;color:var(--t);display:flex;align-items:center;gap:6px}
@@ -72,6 +80,7 @@ textarea{resize:none}
 <body>
 <div id="app"></div>
 <div class="toast" id="toast"></div>
+<script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js"></script>
 <script>
 // ============ CONFIG ============
 const STUN = [{urls:'stun:stun.l.google.com:19302'},{urls:'stun:stun1.l.google.com:19302'}];
@@ -412,6 +421,58 @@ async function cleanOldMessages(){
 }
 
 // ============ UI ============
+// ============ QR CODE ============
+function makeQR(text,size=4){
+  try{
+    const qr=qrcode(0,'M');
+    qr.addData(text);
+    qr.make();
+    return qr.createSvgTag({cellSize:size,margin:2,scalable:true});
+  }catch(e){
+    // data too long for QR, try with lower EC
+    try{
+      const qr=qrcode(0,'L');
+      qr.addData(text);
+      qr.make();
+      return qr.createSvgTag({cellSize:size,margin:2,scalable:true});
+    }catch(e2){return '<div style="color:var(--dim);font-size:11px">Code too long for QR</div>'}
+  }
+}
+
+// QR Scanner via BarcodeDetector or camera
+async function startQRScanner(targetInput){
+  if(!navigator.mediaDevices){toast('Camera not available');return null}
+  const video=document.createElement('video');
+  video.className='scanner';video.autoplay=true;video.playsInline=true;
+  const stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'environment'}});
+  video.srcObject=stream;
+  await video.play();
+
+  const hasDetector='BarcodeDetector' in window;
+  let detector=hasDetector?new BarcodeDetector({formats:['qr_code']}):null;
+  let stopped=false;
+
+  const stop=()=>{stopped=true;stream.getTracks().forEach(t=>t.stop());video.remove()};
+
+  if(detector){
+    const scan=async()=>{
+      if(stopped)return;
+      try{
+        const codes=await detector.detect(video);
+        if(codes.length>0){
+          const val=codes[0].rawValue;
+          if(targetInput)targetInput.value=val;
+          stop();toast('QR code scanned!');
+          return;
+        }
+      }catch(e){}
+      requestAnimationFrame(scan);
+    };
+    requestAnimationFrame(scan);
+  }
+  return{video,stop};
+}
+
 const $=id=>document.getElementById(id);
 
 function showHome(){
@@ -445,21 +506,49 @@ async function doCreate(){
       <h1>Room Created</h1>
       <label>Share this link</label>
       <div class="link-box"><span id="room-link"></span><button id="btn-copy-link">copy</button></div>
-      <label>Your connection code</label>
-      <div class="code-box"><textarea id="my-code" readonly rows="3">generating...</textarea><button id="btn-copy-code">copy</button></div>
-      <label>Paste peer's response code</label>
-      <div class="code-box"><textarea id="peer-code" rows="3" placeholder="paste response here..."></textarea></div>
-      <div class="actions"><button class="primary" id="btn-connect">Connect</button></div>
+      <div id="link-qr" style="text-align:center"></div>
+      <div class="tab-row">
+        <button class="active" id="tab-code">Code</button>
+        <button id="tab-scan">Scan</button>
+      </div>
+      <div id="code-panel">
+        <label>Your connection code</label>
+        <div class="code-box"><textarea id="my-code" readonly rows="3">generating...</textarea><button id="btn-copy-code">copy</button></div>
+        <div id="offer-qr" style="text-align:center;margin-top:8px"></div>
+        <label>Paste peer's response code</label>
+        <div class="code-box"><textarea id="peer-code" rows="3" placeholder="paste A: code here..."></textarea></div>
+        <div class="actions"><button class="primary" id="btn-connect">Connect</button></div>
+      </div>
+      <div id="scan-panel" class="hidden">
+        <p style="color:var(--dim);font-size:11px;margin-bottom:8px">Scan the peer's response QR code</p>
+        <div id="scanner-mount"></div>
+        <button id="btn-start-scan" class="scan-btn">Start Camera</button>
+      </div>
       <div class="status" id="conn-status"><span class="dot"></span> waiting for peer</div>
     </div></div>`;
 
   $('room-link').textContent=location.href;
   $('btn-copy-link').onclick=()=>{navigator.clipboard.writeText(location.href);toast('Link copied')};
+  $('link-qr').innerHTML='<div class="qr-wrap">'+makeQR(location.href,3)+'</div>';
+
+  // tabs
+  $('tab-code').onclick=()=>{$('code-panel').classList.remove('hidden');$('scan-panel').classList.add('hidden');$('tab-code').classList.add('active');$('tab-scan').classList.remove('active')};
+  $('tab-scan').onclick=()=>{$('scan-panel').classList.remove('hidden');$('code-panel').classList.add('hidden');$('tab-scan').classList.add('active');$('tab-code').classList.remove('active')};
 
   // generate offer
   const{pc,dc,code}=await createOffer();
   $('my-code').value=code;
   $('btn-copy-code').onclick=()=>{navigator.clipboard.writeText(code);toast('Code copied')};
+  $('offer-qr').innerHTML='<div class="qr-wrap">'+makeQR(code,2)+'</div>';
+
+  // scanner for answer code
+  let scanRef=null;
+  $('btn-start-scan').onclick=async()=>{
+    const res=await startQRScanner($('peer-code'));
+    if(res){scanRef=res;$('scanner-mount').appendChild(res.video);$('btn-start-scan').textContent='Stop Camera';
+      $('btn-start-scan').onclick=()=>{res.stop();$('btn-start-scan').textContent='Start Camera';$('scanner-mount').innerHTML=''}
+    }
+  };
 
   const peerId=crypto.randomUUID();
   setupDC(peerId,dc);
@@ -514,16 +603,38 @@ async function doJoin(roomId,keyStr){
     <div class="center"><div class="box">
       <h1>Join Room</h1>
       <p>room: ${esc(roomId)}</p>
-      <label>Paste host's connection code</label>
-      <div class="code-box"><textarea id="host-code" rows="3" placeholder="paste code starting with O:..."></textarea></div>
+      <div class="tab-row">
+        <button class="active" id="tab-paste">Paste Code</button>
+        <button id="tab-scan-join">Scan QR</button>
+      </div>
+      <div id="paste-panel">
+        <label>Paste host's connection code</label>
+        <div class="code-box"><textarea id="host-code" rows="3" placeholder="paste O: code here..."></textarea></div>
+      </div>
+      <div id="scan-join-panel" class="hidden">
+        <p style="color:var(--dim);font-size:11px;margin-bottom:8px">Scan the host's QR code</p>
+        <div id="join-scanner-mount"></div>
+        <button id="btn-join-scan" class="scan-btn">Start Camera</button>
+      </div>
       <div class="actions"><button class="primary" id="btn-process">Generate Response</button></div>
       <div id="answer-section" class="hidden">
         <label>Your response code</label>
         <div class="code-box"><textarea id="my-answer" readonly rows="3"></textarea><button id="btn-copy-ans">copy</button></div>
-        <p style="color:var(--dim);font-size:11px;margin-top:8px">Send this code back to the host.</p>
+        <div id="answer-qr" style="text-align:center;margin-top:8px"></div>
+        <p style="color:var(--dim);font-size:11px;margin-top:8px">Show this QR or send the code back to the host.</p>
         <div class="status" id="conn-status"><span class="dot"></span> waiting for connection</div>
       </div>
     </div></div>`;
+
+  // join tabs
+  $('tab-paste').onclick=()=>{$('paste-panel').classList.remove('hidden');$('scan-join-panel').classList.add('hidden');$('tab-paste').classList.add('active');$('tab-scan-join').classList.remove('active')};
+  $('tab-scan-join').onclick=()=>{$('scan-join-panel').classList.remove('hidden');$('paste-panel').classList.add('hidden');$('tab-scan-join').classList.add('active');$('tab-paste').classList.remove('active')};
+  $('btn-join-scan').onclick=async()=>{
+    const res=await startQRScanner($('host-code'));
+    if(res){$('join-scanner-mount').appendChild(res.video);$('btn-join-scan').textContent='Stop';
+      $('btn-join-scan').onclick=()=>{res.stop();$('btn-join-scan').textContent='Start Camera';$('join-scanner-mount').innerHTML=''}
+    }
+  };
 
   $('btn-process').onclick=async()=>{
     const raw=$('host-code').value.trim();
@@ -535,6 +646,7 @@ async function doJoin(roomId,keyStr){
       $('answer-section').classList.remove('hidden');
       $('my-answer').value=code;
       $('btn-copy-ans').onclick=()=>{navigator.clipboard.writeText(code);toast('Code copied')};
+      $('answer-qr').innerHTML='<div class="qr-wrap">'+makeQR(code,2)+'</div>';
       $('btn-process').disabled=true;
 
       const peerId=crypto.randomUUID();
