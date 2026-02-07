@@ -2,607 +2,279 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-<meta http-equiv="Pragma" content="no-cache">
-<meta http-equiv="Expires" content="0">
 <title>Ghost</title>
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap');
-
-:root{
-  --bg:#0b0d14;
-  --surface:#151821;
-  --surface-hover:#1e212b;
-  --border:#2a2e3a;
-  --text:#e8eaf0;
-  --text-secondary:#8b92a8;
-  --accent:#60a5fa;
-  --accent-hover:#3b82f6;
-  --success:#34d399;
-  --warning:#fbbf24;
-  --danger:#f87171;
-  --font:'Inter',system-ui,sans-serif
-}
-
+@import url('https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300..700&display=swap');
 *{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#09090b;--surface:#18181b;--surface2:#27272a;--surface3:#3f3f46;
+  --border:#27272a;--border-hover:#3f3f46;
+  --text:#fafafa;--text2:#a1a1aa;--text3:#71717a;
+  --blue:#3b82f6;--blue-hover:#2563eb;--blue-ghost:rgba(59,130,246,.1);--blue-ghost2:rgba(59,130,246,.06);
+  --green:#22c55e;--green-ghost:rgba(34,197,94,.15);
+  --red:#ef4444;--red-ghost:rgba(239,68,68,.1);
+  --amber:#f59e0b;--amber-ghost:rgba(245,158,11,.12);
+  --radius:10px;--radius-lg:16px;--radius-xl:24px;
+  --font:'Inter',system-ui,-apple-system,sans-serif;
+  --mono:'SF Mono','Cascadia Code','Fira Code',monospace
+}
+html,body{height:100%;font-family:var(--font);background:var(--bg);color:var(--text);overflow:hidden;-webkit-font-smoothing:antialiased}
+::selection{background:var(--blue);color:#fff}
+::-webkit-scrollbar{width:6px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--surface3);border-radius:3px}
 
-html,body{
-  height:100vh;
-  overflow:hidden;
-  font-family:var(--font);
-  background:var(--bg);
-  color:var(--text)
+/* ---- layout ---- */
+.scene{display:flex;align-items:center;justify-content:center;min-height:100vh;padding:24px;position:relative}
+.scene::before{content:'';position:fixed;inset:0;background:radial-gradient(ellipse 80% 60% at 50% -20%,var(--blue-ghost),transparent);pointer-events:none}
+
+.panel{
+  background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-xl);
+  width:100%;max-width:440px;padding:40px;position:relative;
+  box-shadow:0 0 0 1px rgba(255,255,255,.03),0 24px 48px -12px rgba(0,0,0,.6)
 }
 
-body::before{
-  content:'';
-  position:fixed;
-  inset:0;
-  background:
-    radial-gradient(ellipse at 20% 80%,rgba(96,165,250,0.15) 0%,transparent 50%),
-    radial-gradient(ellipse at 80% 20%,rgba(52,211,153,0.1) 0%,transparent 50%),
-    radial-gradient(ellipse at 40% 40%,rgba(139,92,246,0.08) 0%,transparent 40%);
-  z-index:-2
+/* ---- icon system (svg in inline bg) ---- */
+.icon{width:48px;height:48px;border-radius:14px;display:flex;align-items:center;justify-content:center;margin:0 auto 28px;position:relative}
+.icon.blue{background:var(--blue-ghost);color:var(--blue)}
+.icon.green{background:var(--green-ghost);color:var(--green)}
+.icon.amber{background:var(--amber-ghost);color:var(--amber)}
+.icon.red{background:var(--red-ghost);color:var(--red)}
+.icon svg{width:24px;height:24px;stroke:currentColor;fill:none;stroke-width:1.75;stroke-linecap:round;stroke-linejoin:round}
+
+/* ---- typography ---- */
+h1{font-size:22px;font-weight:600;letter-spacing:-.3px;margin-bottom:6px}
+.desc{color:var(--text2);font-size:14px;line-height:1.6;margin-bottom:28px}
+.label{font-size:12px;font-weight:500;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px}
+
+/* ---- form ---- */
+input,textarea{
+  width:100%;background:var(--bg);border:1px solid var(--border);border-radius:var(--radius);
+  padding:12px 14px;color:var(--text);font-size:14px;font-family:var(--font);
+  outline:none;transition:border-color .15s,box-shadow .15s
 }
+input:focus,textarea:focus{border-color:var(--blue);box-shadow:0 0 0 3px var(--blue-ghost)}
+input::placeholder,textarea::placeholder{color:var(--text3)}
+textarea{resize:vertical;font-family:var(--mono);font-size:12px;line-height:1.5}
 
-body::after{
-  content:'';
-  position:fixed;
-  inset:0;
-  background-image:
-    radial-gradient(1px 1px at 10% 10%,rgba(255,255,255,0.8),transparent),
-    radial-gradient(1px 1px at 20% 80%,rgba(255,255,255,0.6),transparent),
-    radial-gradient(1px 1px at 50% 50%,rgba(255,255,255,0.7),transparent),
-    radial-gradient(1px 1px at 70% 30%,rgba(255,255,255,0.5),transparent),
-    radial-gradient(1.5px 1.5px at 90% 70%,rgba(255,255,255,0.9),transparent),
-    radial-gradient(1px 1px at 30% 60%,rgba(255,255,255,0.4),transparent),
-    radial-gradient(1px 1px at 60% 90%,rgba(255,255,255,0.6),transparent),
-    radial-gradient(1px 1px at 80% 15%,rgba(255,255,255,0.5),transparent);
-  background-size:200px 200px;
-  animation:twinkle 8s ease-in-out infinite;
-  z-index:-1
-}
-
-@keyframes twinkle{0%,100%{opacity:0.5}50%{opacity:1}}
-
-.center{
-  display:flex;
-  justify-content:center;
-  align-items:center;
-  min-height:100vh;
-  padding:24px
-}
-
-.card{
-  background:var(--surface);
-  border:1px solid var(--border);
-  border-radius:20px;
-  padding:48px;
-  max-width:480px;
-  width:100%;
-  text-align:center;
-  box-shadow:0 25px 50px -12px rgba(0,0,0,0.5),0 0 0 1px rgba(255,255,255,0.05)
-}
-
-.logo{
-  width:56px;
-  height:56px;
-  background:linear-gradient(135deg,var(--accent),var(--success));
-  border-radius:16px;
-  margin:0 auto 24px;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  font-size:28px;
-  box-shadow:0 8px 32px rgba(96,165,250,0.3)
-}
-
-.logo.admin{
-  background:linear-gradient(135deg,var(--warning),var(--danger));
-  box-shadow:0 8px 32px rgba(251,191,36,0.3)
-}
-
-h1{font-size:32px;font-weight:600;margin-bottom:8px;letter-spacing:-0.5px}
-.subtitle{color:var(--text-secondary);font-size:15px;margin-bottom:32px;line-height:1.5}
-
-input,textarea,select{
-  width:100%;
-  background:var(--bg);
-  border:1px solid var(--border);
-  border-radius:12px;
-  padding:14px 16px;
-  color:var(--text);
-  font-size:15px;
-  font-family:inherit;
-  outline:none;
-  transition:all 0.2s;
-  margin:8px 0
-}
-
-input:focus,textarea:focus,select:focus{
-  border-color:var(--accent);
-  box-shadow:0 0 0 3px rgba(96,165,250,0.1)
-}
-
-input::placeholder,textarea::placeholder{color:var(--text-secondary)}
-
+/* ---- buttons ---- */
 .btn{
-  width:100%;
-  padding:14px 24px;
-  border-radius:12px;
-  border:none;
-  font-size:15px;
-  font-weight:500;
-  font-family:inherit;
-  cursor:pointer;
-  transition:all 0.2s;
-  margin-top:12px
+  display:inline-flex;align-items:center;justify-content:center;gap:8px;
+  padding:10px 18px;border-radius:var(--radius);border:none;
+  font-size:14px;font-weight:500;font-family:var(--font);cursor:pointer;
+  transition:all .15s;white-space:nowrap;user-select:none
 }
+.btn:active{transform:scale(.97)}
+.btn-fill{background:var(--blue);color:#fff}
+.btn-fill:hover{background:var(--blue-hover);box-shadow:0 4px 16px rgba(59,130,246,.3)}
+.btn-ghost{background:transparent;color:var(--text2);border:1px solid var(--border)}
+.btn-ghost:hover{background:var(--surface2);border-color:var(--border-hover);color:var(--text)}
+.btn-danger{background:var(--red-ghost);color:var(--red);border:1px solid transparent}
+.btn-danger:hover{background:var(--red);color:#fff}
+.btn-sm{padding:7px 12px;font-size:13px;border-radius:8px}
+.btn-block{width:100%}
+.btn-row{display:flex;gap:10px;margin-top:16px}
+.btn-row .btn{flex:1}
 
-.btn-primary{
-  background:var(--accent);
-  color:#0b0d14
+/* ---- code box ---- */
+.code-display{
+  background:var(--bg);border:1px solid var(--border);border-radius:var(--radius);
+  padding:14px;font-family:var(--mono);font-size:11px;line-height:1.6;
+  color:var(--text2);word-break:break-all;max-height:140px;overflow-y:auto;
+  margin:16px 0;cursor:text;user-select:all;transition:border-color .15s
 }
+.code-display:hover{border-color:var(--border-hover)}
 
-.btn-primary:hover{
-  background:var(--accent-hover);
-  transform:translateY(-1px);
-  box-shadow:0 8px 24px rgba(96,165,250,0.35)
+/* ---- divider ---- */
+.divider{height:1px;background:var(--border);margin:28px 0}
+
+/* ---- spinner ---- */
+.spinner{display:flex;align-items:center;gap:10px;color:var(--text3);font-size:13px;margin-top:20px;justify-content:center}
+.spinner::before{content:'';width:16px;height:16px;border:2px solid var(--border);border-top-color:var(--blue);border-radius:50%;animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* ---- chat layout ---- */
+#chat{position:fixed;inset:0;display:flex;flex-direction:column;background:var(--bg)}
+#chat-head{
+  padding:12px 20px;background:var(--surface);border-bottom:1px solid var(--border);
+  display:flex;align-items:center;justify-content:space-between;flex-shrink:0;
+  backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)
 }
+#chat-head .room-info{display:flex;align-items:center;gap:12px}
+#chat-head .room-name{font-size:15px;font-weight:600}
+#chat-head .room-meta{font-size:12px;color:var(--text3)}
+.status-dot{width:8px;height:8px;border-radius:50%;background:var(--green);flex-shrink:0}
+#chat-head .actions{display:flex;gap:6px}
+.icon-btn{
+  width:36px;height:36px;border-radius:8px;border:none;background:transparent;
+  color:var(--text3);cursor:pointer;display:flex;align-items:center;justify-content:center;
+  transition:all .15s
+}
+.icon-btn:hover{background:var(--surface2);color:var(--text)}
+.icon-btn svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:1.75;stroke-linecap:round;stroke-linejoin:round}
 
-.btn-secondary{
-  background:transparent;
-  color:var(--text);
+/* ---- messages ---- */
+#msgs{flex:1;overflow-y:auto;padding:20px;display:flex;flex-direction:column;gap:2px}
+.msg{max-width:70%;padding:10px 14px;font-size:14px;line-height:1.5;animation:msgIn .25s ease;position:relative}
+@keyframes msgIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+
+.msg.in{
+  align-self:flex-start;background:var(--surface);border-radius:4px 16px 16px 16px;
   border:1px solid var(--border)
 }
-
-.btn-secondary:hover{background:var(--surface-hover);border-color:var(--text-secondary)}
-
-.btn-danger{
-  background:var(--danger);
-  color:#0b0d14
+.msg.out{
+  align-self:flex-end;background:var(--blue);color:#fff;border-radius:16px 16px 4px 16px
+}
+.msg .who{font-size:11px;font-weight:600;color:var(--blue);margin-bottom:3px}
+.msg.out .who{color:rgba(255,255,255,.7)}
+.msg .when{font-size:11px;color:var(--text3);margin-top:4px;text-align:right}
+.msg.out .when{color:rgba(255,255,255,.5)}
+.msg.system{
+  align-self:center;max-width:100%;background:transparent;border:none;
+  color:var(--text3);font-size:12px;padding:8px 0;text-align:center
 }
 
-.btn-danger:hover{
-  background:#ef4444;
-  transform:translateY(-1px);
-  box-shadow:0 8px 24px rgba(248,113,113,0.35)
+.msg .file-chip{
+  display:flex;align-items:center;gap:10px;padding:10px 14px;margin-top:8px;
+  background:rgba(0,0,0,.2);border-radius:8px;cursor:pointer;transition:background .15s
 }
+.msg .file-chip:hover{background:rgba(0,0,0,.3)}
+.msg .file-chip .f-icon{width:36px;height:36px;border-radius:8px;background:rgba(255,255,255,.1);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.msg .file-chip .f-icon svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:1.75}
+.msg .file-chip .f-info{font-size:13px;line-height:1.3}
+.msg .file-chip .f-size{font-size:11px;opacity:.6}
 
-.btn-small{
-  width:auto;
-  padding:8px 16px;
-  font-size:13px;
-  margin-top:0
+.msg.selected{outline:2px solid var(--blue);outline-offset:2px;border-radius:16px}
+
+/* ---- input bar ---- */
+#input-bar{
+  padding:12px 16px;background:var(--surface);border-top:1px solid var(--border);
+  display:flex;align-items:center;gap:10px;flex-shrink:0
 }
-
-.code-box{
-  background:var(--bg);
-  border:1px solid var(--border);
-  border-radius:12px;
-  padding:16px;
-  font-family:'SF Mono',monospace;
-  font-size:12px;
-  word-break:break-all;
-  margin:16px 0;
-  color:var(--text-secondary);
-  max-height:120px;
-  overflow-y:auto;
-  text-align:left
+#input-bar input{margin:0;background:var(--bg);flex:1}
+#input-bar .icon-btn{flex-shrink:0}
+#send{
+  width:36px;height:36px;border-radius:8px;border:none;background:var(--blue);
+  color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;
+  transition:all .15s;flex-shrink:0
 }
+#send:hover{background:var(--blue-hover)}
+#send:active{transform:scale(.92)}
+#send svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
 
-.qr-wrap{
-  background:#fff;
-  border-radius:16px;
-  padding:20px;
-  display:inline-block;
-  margin:16px 0;
-  box-shadow:0 8px 32px rgba(0,0,0,0.3)
+/* ---- selection bar ---- */
+#sel-bar{
+  display:none;padding:8px 16px;background:var(--blue-ghost2);border-bottom:1px solid var(--border);
+  align-items:center;justify-content:space-between;font-size:13px;color:var(--text2)
 }
+#sel-bar.show{display:flex}
+#sel-bar .sel-actions{display:flex;gap:6px}
 
-
-.code-box:hover{
-  border-color:var(--accent)
+/* ---- drop overlay ---- */
+#drop{
+  position:fixed;inset:0;background:rgba(9,9,11,.92);display:none;
+  flex-direction:column;align-items:center;justify-content:center;z-index:200;
+  backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)
 }
-
-/* Chat UI */
-#chat-container{
-  position:fixed;
-  inset:0;
-  display:flex;
-  flex-direction:column
+#drop.show{display:flex}
+#drop .drop-ring{
+  width:120px;height:120px;border-radius:50%;border:2px dashed var(--blue);
+  display:flex;align-items:center;justify-content:center;margin-bottom:20px;
+  animation:dropPulse 2s ease infinite
 }
+@keyframes dropPulse{0%,100%{opacity:.5;transform:scale(1)}50%{opacity:1;transform:scale(1.05)}}
+#drop .drop-ring svg{width:40px;height:40px;stroke:var(--blue);fill:none;stroke-width:1.5}
+#drop p{color:var(--text2);font-size:15px}
 
-#chat-header{
-  padding:16px 24px;
-  background:var(--surface);
-  border-bottom:1px solid var(--border);
-  display:flex;
-  justify-content:space-between;
-  align-items:center
+/* ---- modal ---- */
+.modal-bg{
+  position:fixed;inset:0;background:rgba(0,0,0,.6);display:none;align-items:center;
+  justify-content:center;z-index:300;backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px)
 }
-
-#chat-header h2{
-  font-size:16px;
-  font-weight:600;
-  display:flex;
-  align-items:center;
-  gap:8px
+.modal-bg.show{display:flex}
+.modal-box{
+  background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);
+  padding:28px;max-width:400px;width:90%;max-height:85vh;overflow-y:auto;
+  box-shadow:0 24px 48px -12px rgba(0,0,0,.5)
 }
+.modal-box h3{font-size:17px;font-weight:600;margin-bottom:8px}
+.modal-box .mdesc{color:var(--text2);font-size:13px;margin-bottom:20px;line-height:1.5}
+.qr-frame{background:#fff;border-radius:12px;padding:16px;display:inline-block;margin:0 auto}
 
-#chat-header .badge{
-  font-size:11px;
-  padding:4px 8px;
-  border-radius:6px;
-  background:var(--border);
-  color:var(--text-secondary);
-  font-weight:500
+/* ---- settings drawer ---- */
+#drawer{
+  position:fixed;top:0;right:0;width:380px;max-width:100vw;height:100%;
+  background:var(--surface);border-left:1px solid var(--border);
+  transform:translateX(100%);transition:transform .25s ease;z-index:250;
+  display:flex;flex-direction:column
 }
+#drawer.open{transform:translateX(0)}
+#drawer-head{padding:20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+#drawer-head h3{font-size:16px;font-weight:600}
+#drawer-body{padding:20px;overflow-y:auto;flex:1}
+.drawer-section{margin-bottom:28px}
+.drawer-section h4{font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.8px;margin-bottom:14px}
+.drawer-row{display:flex;align-items:center;justify-content:space-between;padding:10px 0}
+.drawer-row span{font-size:14px}
+.drawer-row .val{font-size:13px;color:var(--text2);font-family:var(--mono)}
+.toggle{width:40px;height:22px;border-radius:11px;background:var(--surface3);position:relative;cursor:pointer;transition:background .2s}
+.toggle.on{background:var(--blue)}
+.toggle::after{content:'';position:absolute;width:18px;height:18px;border-radius:50%;background:#fff;top:2px;left:2px;transition:transform .2s}
+.toggle.on::after{transform:translateX(18px)}
+.drawer-overlay{position:fixed;inset:0;background:rgba(0,0,0,.3);z-index:240;display:none}
+.drawer-overlay.show{display:block}
 
-#chat-header .badge.admin{
-  background:var(--warning);
-  color:#0b0d14
-}
-
-#header-actions{
-  display:flex;
-  gap:8px
-}
-
-#messages{
-  flex:1;
-  overflow-y:auto;
-  padding:24px;
-  display:flex;
-  flex-direction:column;
-  gap:12px
-}
-
-#messages.drag-over{
-  background:rgba(96,165,250,0.1);
-  outline:2px dashed var(--accent);
-  outline-offset:-12px
-}
-
-.message{
-  max-width:75%;
-  padding:12px 16px;
-  border-radius:18px;
-  font-size:15px;
-  line-height:1.4;
-  animation:slideIn 0.3s ease;
-  position:relative
-}
-
-@keyframes slideIn{
-  from{opacity:0;transform:translateY(10px)}
-  to{opacity:1;transform:translateY(0)}
-}
-
-.message.received{
-  align-self:flex-start;
-  background:var(--surface);
-  border:1px solid var(--border);
-  border-bottom-left-radius:4px
-}
-
-.message.sent{
-  align-self:flex-end;
-  background:var(--accent);
-  color:#0b0d14;
-  border-bottom-right-radius:4px
-}
-
-.message .nick{
-  font-size:11px;
-  font-weight:600;
-  text-transform:uppercase;
-  letter-spacing:0.5px;
-  margin-bottom:4px;
-  opacity:0.7
-}
-
-.message .meta{
-  font-size:11px;
-  opacity:0.5;
-  margin-top:4px;
-  display:flex;
-  gap:8px;
-  align-items:center
-}
-
-.message .file-attachment{
-  display:flex;
-  align-items:center;
-  gap:8px;
-  padding:8px 12px;
-  background:rgba(0,0,0,0.2);
-  border-radius:8px;
-  margin-top:8px;
-  cursor:pointer;
-  transition:all 0.2s
-}
-
-.message .file-attachment:hover{
-  background:rgba(0,0,0,0.3)
-}
-
-.message.selected{
-  outline:2px solid var(--accent);
-  outline-offset:2px
-}
-
-#input-area{
-  padding:16px 24px;
-  background:var(--surface);
-  border-top:1px solid var(--border);
-  display:flex;
-  flex-direction:column;
-  gap:12px
-}
-
-#input-row{
-  display:flex;
-  gap:12px;
-  align-items:center
-}
-
-#msg-input{
-  flex:1;
-  margin:0
-}
-
-#send-btn, #file-btn{
-  width:auto;
-  margin:0;
-  padding:14px 20px
-}
-
-#file-btn{
-  background:transparent;
-  border:1px solid var(--border);
-  color:var(--text);
-  font-size:20px;
-  line-height:1;
-  padding:12px 16px
-}
-
-#file-btn:hover{background:var(--surface-hover)}
-
-#selection-bar{
-  display:none;
-  justify-content:space-between;
-  align-items:center;
-  padding:12px 16px;
-  background:var(--bg);
-  border-radius:8px;
-  margin-bottom:8px
-}
-
-#selection-bar.active{display:flex}
-
-#selection-info{
-  font-size:14px;
-  color:var(--text-secondary)
-}
-
-#selection-actions{
-  display:flex;
-  gap:8px
-}
-
-#drop-overlay{
-  position:fixed;
-  inset:0;
-  background:rgba(11,13,20,0.9);
-  display:none;
-  flex-direction:column;
-  justify-content:center;
-  align-items:center;
-  z-index:100;
-  backdrop-filter:blur(4px)
-}
-
-#drop-overlay.active{display:flex}
-
-#drop-overlay .drop-icon{
-  font-size:64px;
-  margin-bottom:24px
-}
-
-#drop-overlay p{
-  font-size:20px;
-  color:var(--text-secondary)
-}
-
-/* Settings panel */
-#settings-panel{
-  position:fixed;
-  top:0;
-  right:-400px;
-  width:400px;
-  height:100vh;
-  background:var(--surface);
-  border-left:1px solid var(--border);
-  padding:24px;
-  overflow-y:auto;
-  transition:right 0.3s ease;
-  z-index:50
-}
-
-#settings-panel.open{right:0}
-
-#settings-panel h3{
-  font-size:18px;
-  margin-bottom:24px;
-  display:flex;
-  justify-content:space-between;
-  align-items:center
-}
-
-#settings-panel .close-btn{
-  background:none;
-  border:none;
-  color:var(--text-secondary);
-  font-size:24px;
-  cursor:pointer
-}
-
-#settings-panel .section{
-  margin-bottom:32px;
-  padding-bottom:32px;
-  border-bottom:1px solid var(--border)
-}
-
-#settings-panel .section:last-child{border:none}
-
-#settings-panel h4{
-  font-size:14px;
-  text-transform:uppercase;
-  letter-spacing:0.5px;
-  color:var(--text-secondary);
-  margin-bottom:16px
-}
-
-.setting-row{
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  margin-bottom:12px
-}
-
-.setting-row label{font-size:14px}
-
-/* Toggle switch */
-.toggle{
-  width:44px;
-  height:24px;
-  background:var(--border);
-  border-radius:12px;
-  position:relative;
-  cursor:pointer;
-  transition:background 0.2s
-}
-
-.toggle.active{background:var(--accent)}
-
-.toggle::after{
-  content:'';
-  position:absolute;
-  width:20px;
-  height:20px;
-  background:var(--text);
-  border-radius:50%;
-  top:2px;
-  left:2px;
-  transition:transform 0.2s
-}
-
-.toggle.active::after{transform:translateX(20px)}
-
-/* Member list */
-.member-list{
-  display:flex;
-  flex-direction:column;
-  gap:8px
-}
-
-.member{
-  display:flex;
-  align-items:center;
-  gap:12px;
-  padding:12px;
-  background:var(--bg);
-  border-radius:8px
-}
-
-.member .avatar{
-  width:32px;
-  height:32px;
-  border-radius:50%;
-  background:var(--accent);
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  font-size:14px;
-  font-weight:600
-}
-
-.member .info{flex:1}
-
-.member .name{
-  font-size:14px;
-  font-weight:500
-}
-
-.member .role{
-  font-size:12px;
-  color:var(--text-secondary)
-}
-
-/* Modal */
-.modal-overlay{
-  position:fixed;
-  inset:0;
-  background:rgba(0,0,0,0.7);
-  display:none;
-  justify-content:center;
-  align-items:center;
-  z-index:100;
-  backdrop-filter:blur(4px)
-}
-
-.modal-overlay.active{display:flex}
-
-.modal{
-  background:var(--surface);
-  border:1px solid var(--border);
-  border-radius:16px;
-  padding:32px;
-  max-width:420px;
-  width:90%;
-  max-height:80vh;
-  overflow-y:auto
-}
-
-.modal h3{
-  font-size:20px;
-  margin-bottom:16px
-}
-
-.modal p{
-  color:var(--text-secondary);
-  margin-bottom:24px;
-  line-height:1.5
-}
-
-.modal .btn-group{
-  display:flex;
-  gap:12px
-}
-
-.modal .btn-group .btn{flex:1;margin-top:0}
+.badge{display:inline-flex;padding:3px 8px;border-radius:6px;font-size:11px;font-weight:600;letter-spacing:.3px}
+.badge-blue{background:var(--blue-ghost);color:var(--blue)}
+.badge-amber{background:var(--amber-ghost);color:var(--amber)}
 
 .hidden{display:none}
 </style>
 </head>
 <body>
+
 <div id="app"></div>
-<div id="drop-overlay">
-  <div class="drop-icon">📁</div>
+
+<div id="drop">
+  <div class="drop-ring"><svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg></div>
   <p>Drop files to send</p>
 </div>
-<div id="settings-panel">
-  <h3>Settings <button class="close-btn" onclick="toggleSettings()">&times;</button></h3>
-  <div id="settings-content"></div>
+
+<div id="drawer-overlay" class="drawer-overlay" onclick="closeDrawer()"></div>
+<div id="drawer">
+  <div id="drawer-head"><h3>Room</h3><button class="icon-btn" onclick="closeDrawer()"><svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>
+  <div id="drawer-body"></div>
 </div>
-<div id="modal-overlay" class="modal-overlay">
-  <div class="modal" id="modal-content"></div>
+
+<div id="modal-bg" class="modal-bg" onclick="closeModal()">
+  <div class="modal-box" id="modal-box" onclick="event.stopPropagation()"></div>
 </div>
+
 <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js"></script>
 <script>
-// ============== CRYPTO UTILS ==============
+// ============== SVG ICONS ==============
+const ICO={
+  ghost:`<svg viewBox="0 0 24 24"><path d="M9 10h.01M15 10h.01M12 2a8 8 0 0 0-8 8v12l3-3 2 2 3-3 3 3 2-2 3 3V10a8 8 0 0 0-8-8z"/></svg>`,
+  shield:`<svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>`,
+  key:`<svg viewBox="0 0 24 24"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"/></svg>`,
+  send2:`<svg viewBox="0 0 24 24"><path d="M3.714 3.048a.498.498 0 0 0-.683.627l2.843 7.627a2 2 0 0 1 0 1.396l-2.842 7.627a.498.498 0 0 0 .682.627l18.168-8.215a.5.5 0 0 0 0-.904z"/><line x1="6" y1="12" x2="22" y2="12"/></svg>`,
+  copy:`<svg viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>`,
+  qr:`<svg viewBox="0 0 24 24"><rect x="2" y="2" width="8" height="8" rx="1"/><rect x="14" y="2" width="8" height="8" rx="1"/><rect x="2" y="14" width="8" height="8" rx="1"/><rect x="14" y="14" width="4" height="4"/><rect x="20" y="20" width="2" height="2"/><rect x="14" y="20" width="2" height="2"/><rect x="20" y="14" width="2" height="2"/></svg>`,
+  clip:`<svg viewBox="0 0 24 24"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>`,
+  settings:`<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>`,
+  x:`<svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>`,
+  arrow:`<svg viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>`,
+  file:`<svg viewBox="0 0 24 24"><path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><polyline points="13 2 13 9 20 9"/></svg>`,
+  download:`<svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>`,
+  skull:`<svg viewBox="0 0 24 24"><circle cx="9" cy="12" r="1"/><circle cx="15" cy="12" r="1"/><path d="M8 20v2h8v-2"/><path d="M12.5 17-.5-1h-1l-.5 1"/><path d="M16 20a2 2 0 0 0 1.56-3.25 8 8 0 1 0-11.12 0A2 2 0 0 0 8 20"/></svg>`,
+  back:`<svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>`,
+  users:`<svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>`,
+  lock:`<svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>`,
+};
+
+// ============== CRYPTO ==============
 const b64url=buf=>btoa(String.fromCharCode(...new Uint8Array(buf))).replace(/\+/g,'-').replace(/\//g,'_').replace(/=/g,'');
 const unb64=s=>{s=s.replace(/-/g,'+').replace(/_/g,'/');while(s.length%4)s+='=';return Uint8Array.from(atob(s),c=>c.charCodeAt(0))};
 const rnd=(n=4)=>[...crypto.getRandomValues(new Uint8Array(n))].map(b=>b.toString(16).padStart(2,'0')).join('');
@@ -625,719 +297,370 @@ async function decompress(s){const d=new DecompressionStream('deflate');const w=
 // ============== STATE ==============
 const STUN=[{urls:'stun:stun.l.google.com:19302'},{urls:'stun:stun1.l.google.com:19302'}];
 const $=id=>document.getElementById(id);
+const S={pc:null,dc:null,roomKey:null,roomId:null,nick:null,myId:crypto.randomUUID(),myKeyPair:null,myPubKey:null,adminPubKey:null,isAdmin:false,peers:new Map(),selectedMessages:new Set(),files:new Map(),msgTTL:4*60*60*1000};
 
-const S={
-  pc:null,
-  dc:null,
-  roomKey:null,
-  roomId:null,
-  nick:null,
-  myId:crypto.randomUUID(),
-  myKeyPair:null,
-  myPubKey:null,
-  adminPubKey:null,
-  isAdmin:false,
-  peers:new Map(),
-  messages:[],
-  selectedMessages:new Set(),
-  files:new Map(),
-  msgTTL:4*60*60*1000,
-  maxPeers:10,
-  expiresAt:null
+const Store={
+  get(k){try{return JSON.parse(localStorage.getItem('g:'+k))}catch(e){return null}},
+  set(k,v){localStorage.setItem('g:'+k,JSON.stringify(v))},
+  del(k){localStorage.removeItem('g:'+k)},
+  clear(){Object.keys(localStorage).filter(k=>k.startsWith('g:')).forEach(k=>localStorage.removeItem(k))}
 };
 
-// ============== STORAGE ==============
-const Storage={
-  get(k){try{return JSON.parse(localStorage.getItem('ghost:'+k))}catch(e){return null}},
-  set(k,v){localStorage.setItem('ghost:'+k,JSON.stringify(v))},
-  del(k){localStorage.removeItem('ghost:'+k)},
-  clear(){for(let k of Object.keys(localStorage))if(k.startsWith('ghost:'))localStorage.removeItem(k)}
-};
-
-// ============== UI HELPERS ==============
+// ============== SCREENS ==============
 function showHome(){
-  const saved=Storage.get('session');
-  $('app').innerHTML=`<div class="center"><div class="card">
-    <div class="logo">👻</div>
+  const saved=Store.get('session');
+  $('app').innerHTML=`<div class="scene"><div class="panel">
+    <div class="icon blue">${ICO.ghost}</div>
     <h1>Ghost</h1>
-    <p class="subtitle">Private group chats.<br>No servers. No logs. Just encrypted.</p>
-    <input id="nick-in" placeholder="Your name" maxlength="20" value="${Storage.get('nick')||''}">
-    <button class="btn btn-primary" onclick="doCreate()">Create Room (Admin)</button>
-    <button class="btn btn-secondary" onclick="showJoin()">Join Room</button>
-    ${saved?`<button class="btn btn-secondary" onclick="restoreSession()">Rejoin Last Room</button>`:''}
+    <p class="desc">End-to-end encrypted chat. No servers, no logs, no trace.</p>
+    <input id="nick-in" placeholder="Display name" maxlength="20" value="${Store.get('nick')||''}" style="margin-bottom:8px">
+    <div class="btn-row"><button class="btn btn-fill btn-block" onclick="doCreate()">Create room</button></div>
+    <div class="btn-row" style="margin-top:8px"><button class="btn btn-ghost btn-block" onclick="showJoin()">Join room</button></div>
+    ${saved?'<div class="btn-row" style="margin-top:8px"><button class="btn btn-ghost btn-block" onclick="restoreSession()">Reconnect</button></div>':''}
   </div></div>`;
 }
 
 async function doCreate(){
   S.nick=$('nick-in').value.trim()||'Ghost'+rnd(2);
-  Storage.set('nick',S.nick);
-  S.roomId=rnd(8);
-  S.roomKey=await genAESKey();
-  S.isAdmin=true;
-  S.myKeyPair=await genECDSAKey();
-  S.myPubKey=await expECDSAPub(S.myKeyPair.publicKey);
+  Store.set('nick',S.nick);
+  S.roomId=rnd(8);S.roomKey=await genAESKey();S.isAdmin=true;
+  S.myKeyPair=await genECDSAKey();S.myPubKey=await expECDSAPub(S.myKeyPair.publicKey);
   S.adminPubKey=S.myPubKey;
-  S.expiresAt=Date.now()+24*60*60*1000;
 
   const pc=new RTCPeerConnection({iceServers:STUN});
   const dc=pc.createDataChannel('chat',{ordered:true});
-  setupDC(dc,true);
-
-  const offer=await pc.createOffer();
-  await pc.setLocalDescription(offer);
-  await waitICE(pc);
+  setupDC(dc);
+  const offer=await pc.createOffer();await pc.setLocalDescription(offer);await waitICE(pc);
 
   const roomKeyStr=await expAESKey(S.roomKey);
   const code='G:'+S.roomId+'.'+roomKeyStr+'.'+S.myPubKey+'.'+await compress(pc.localDescription.sdp);
-  const baseUrl=location.origin+location.pathname;
-  const link=baseUrl+'#'+encodeURIComponent(code);
-  S.pc=pc;
+  S.pc=pc;saveSession();window.currentCode=code;
 
-  saveSession();
-
-  window.currentLink=link;
-  window.currentCode=code;
-
-  $('app').innerHTML=`<div class="center"><div class="card">
-    <div class="logo admin">👑</div>
-    <h1>Room Created</h1>
-    <p class="subtitle">Share this code to invite others.<br>Expires in 24 hours.</p>
-    <div class="code-box" id="code" style="font-size:11px;max-height:200px">${code}</div>
-    <div style="display:flex;gap:12px">
-      <button class="btn btn-primary" style="flex:1;margin-top:0" onclick="copyCode()">Copy Code</button>
-      <button class="btn btn-secondary" style="flex:1;margin-top:0" onclick="showQR()">📱 Share QR</button>
+  $('app').innerHTML=`<div class="scene"><div class="panel">
+    <div class="icon amber">${ICO.shield}</div>
+    <h1>Room created</h1>
+    <p class="desc">Share this invite code. It contains the encryption key and connection data.</p>
+    <div class="label">Invite code</div>
+    <div class="code-display" id="code-out">${code}</div>
+    <div class="btn-row">
+      <button class="btn btn-fill" onclick="doCopy()">${ICO.copy} Copy</button>
+      <button class="btn btn-ghost" onclick="doShowQR()">${ICO.qr} QR code</button>
     </div>
-    <hr style="border:0;border-top:1px solid var(--border);margin:24px 0">
-
-    <p class="subtitle" style="margin-bottom:16px">Waiting for someone to join...</p>
-    <button class="btn btn-secondary" onclick="showAnswer()">Enter Reply Code</button>
-    <button class="btn btn-secondary" onclick="showHome()">Back</button>
+    <div class="divider"></div>
+    <div class="label">Next step</div>
+    <p class="desc" style="margin-bottom:12px">Once they send back a reply code, paste it here.</p>
+    <textarea id="ans-in" rows="3" placeholder="Paste reply code (A:...)"></textarea>
+    <div class="btn-row"><button class="btn btn-fill btn-block" onclick="acceptAnswer()">Connect ${ICO.arrow}</button></div>
+    <div style="text-align:center;margin-top:12px"><button class="btn btn-ghost btn-sm" onclick="showHome()">${ICO.back} Back</button></div>
   </div></div>`;
 }
 
-function showJoin(prefillCode){
-  S.nick=Storage.get('nick')||'Ghost'+rnd(2);
-  Storage.set('nick',S.nick);
-  $('app').innerHTML=`<div class="center"><div class="card">
-    <div class="logo">🔑</div>
-    <h1>Join Room</h1>
-    <p class="subtitle">Paste the invite code.</p>
-    <textarea id="code-in" rows="4" placeholder="G:..."></textarea>
-    <button class="btn btn-primary" onclick="doJoin()">Connect</button>
-    <button class="btn btn-secondary" onclick="showHome()">Back</button>
+function showJoin(prefill){
+  S.nick=Store.get('nick')||'Ghost'+rnd(2);Store.set('nick',S.nick);
+  $('app').innerHTML=`<div class="scene"><div class="panel">
+    <div class="icon green">${ICO.key}</div>
+    <h1>Join room</h1>
+    <p class="desc">Paste the invite code you received.</p>
+    <textarea id="code-in" rows="4" placeholder="Paste invite code (G:...)"></textarea>
+    <div class="btn-row"><button class="btn btn-fill btn-block" onclick="doJoin()">Join ${ICO.arrow}</button></div>
+    <div style="text-align:center;margin-top:12px"><button class="btn btn-ghost btn-sm" onclick="showHome()">${ICO.back} Back</button></div>
   </div></div>`;
-  if(prefillCode){
-    $('code-in').value=prefillCode;
-    doJoin();
-  }else{
-    $('code-in').focus();
-  }
+  if(prefill){$('code-in').value=prefill;doJoin();}
+  else $('code-in').focus();
 }
 
 async function doJoin(){
-  const input=$('code-in').value.trim();
-  if(!input.startsWith('G:')){alert('Invalid code');return}
-  const parts=input.slice(2).split('.');
-  if(parts.length!==4){alert('Invalid code format');return}
+  const raw=$('code-in').value.trim();
+  if(!raw.startsWith('G:')){alert('Invalid code');return}
+  const p=raw.slice(2).split('.');if(p.length!==4){alert('Invalid code');return}
 
-  S.roomId=parts[0];
-  S.roomKey=await impAESKey(parts[1]);
-  S.adminPubKey=parts[2];
-  S.isAdmin=false;
-  S.myKeyPair=await genECDSAKey();
-  S.myPubKey=await expECDSAPub(S.myKeyPair.publicKey);
-  const offerSDP=await decompress(parts[3]);
+  S.roomId=p[0];S.roomKey=await impAESKey(p[1]);S.adminPubKey=p[2];S.isAdmin=false;
+  S.myKeyPair=await genECDSAKey();S.myPubKey=await expECDSAPub(S.myKeyPair.publicKey);
+  const offerSDP=await decompress(p[3]);
 
   const pc=new RTCPeerConnection({iceServers:STUN});
-  let dcResolve;
-  const dcPromise=new Promise(r=>dcResolve=r);
-  pc.ondatachannel=e=>dcResolve(e.channel);
-
+  let dcR;const dcP=new Promise(r=>dcR=r);
+  pc.ondatachannel=e=>dcR(e.channel);
   await pc.setRemoteDescription({type:'offer',sdp:offerSDP});
-  const answer=await pc.createAnswer();
-  await pc.setLocalDescription(answer);
-  await waitICE(pc);
+  const ans=await pc.createAnswer();await pc.setLocalDescription(ans);await waitICE(pc);
 
   S.pc=pc;
   const answerCode='A:'+S.myPubKey+'.'+await compress(pc.localDescription.sdp);
-  const baseUrl=location.origin+location.pathname;
-  const link=baseUrl+'#A='+encodeURIComponent(answerCode);
+  saveSession();window.currentCode=answerCode;
 
-  saveSession();
-  window.currentCode=answerCode;
-
-  $('app').innerHTML=`<div class="center"><div class="card">
-    <div class="logo">✉️</div>
-    <h1>Send Reply</h1>
-    <p class="subtitle">Give this code back to the admin.</p>
-    <div class="code-box" id="code" style="font-size:11px">${answerCode}</div>
-    <div style="display:flex;gap:12px">
-      <button class="btn btn-primary" style="flex:1;margin-top:0" onclick="copyCode()">Copy Code</button>
-      <button class="btn btn-secondary" style="flex:1;margin-top:0" onclick="showQR()">📱 Show QR</button>
+  $('app').innerHTML=`<div class="scene"><div class="panel">
+    <div class="icon green">${ICO.lock}</div>
+    <h1>Send reply</h1>
+    <p class="desc">Copy this code and send it back to the room admin.</p>
+    <div class="label">Reply code</div>
+    <div class="code-display" id="code-out">${answerCode}</div>
+    <div class="btn-row">
+      <button class="btn btn-fill" onclick="doCopy()">${ICO.copy} Copy</button>
+      <button class="btn btn-ghost" onclick="doShowQR()">${ICO.qr} QR code</button>
     </div>
+    <div class="spinner">Waiting for connection...</div>
   </div></div>`;
 
-  const dc=await dcPromise;
-  setupDC(dc,false);
-}
-
-function showAnswer(){
-  $('app').innerHTML=`<div class="center"><div class="card">
-    <div class="logo">🔓</div>
-    <h1>Enter Reply</h1>
-    <p class="subtitle">Paste the answer code from peer.</p>
-    <textarea id="ans-in" rows="4" placeholder="A:..."></textarea>
-    <button class="btn btn-primary" onclick="acceptAnswer()">Connect</button>
-  </div></div>`;
+  const dc=await dcP;setupDC(dc);
 }
 
 async function acceptAnswer(){
-  const input=$('ans-in').value.trim();
-  if(!input.startsWith('A:')){alert('Invalid code');return}
-  const parts=input.slice(2).split('.');
-  if(parts.length!==2){alert('Invalid code');return}
-
-  const peerPubKey=parts[0];
-  const answerSDP=await decompress(parts[1]);
-  await S.pc.setRemoteDescription({type:'answer',sdp:answerSDP});
-
-  // Send admin pubkey to new peer
-  sendToPeer(peerPubKey,{type:'admin-pubkey',pubKey:S.adminPubKey,from:S.myId});
+  const raw=$('ans-in').value.trim();
+  if(!raw.startsWith('A:')){alert('Needs to start with A:');return}
+  const p=raw.slice(2).split('.');if(p.length!==2){alert('Invalid reply code');return}
+  await S.pc.setRemoteDescription({type:'answer',sdp:await decompress(p[1])});
 }
 
-async function waitICE(pc){
-  return new Promise(r=>{
-    if(pc.iceGatheringState==='complete')r();
-    else pc.onicegatheringstatechange=()=>{if(pc.iceGatheringState==='complete')r()};
-    setTimeout(r,3000);
-  });
+async function waitICE(pc){return new Promise(r=>{if(pc.iceGatheringState==='complete')r();else pc.onicegatheringstatechange=()=>{if(pc.iceGatheringState==='complete')r()};setTimeout(r,3000)})}
+
+function doCopy(){
+  navigator.clipboard.writeText(window.currentCode);
+  const b=document.querySelector('.btn-fill');if(!b)return;
+  const orig=b.innerHTML;b.innerHTML='Copied!';b.style.background='var(--green)';
+  setTimeout(()=>{b.innerHTML=orig;b.style.background=''},1500);
 }
 
-function copyCode(){
-  const code = window.currentCode;
-  if (!code) return;
-  navigator.clipboard.writeText(code);
-  const btn = document.querySelector('.btn-primary');
-  const original = btn.textContent;
-  btn.textContent = 'Copied!';
-  setTimeout(() => btn.textContent = original, 2000);
+function doShowQR(){
+  const link=location.origin+location.pathname+'#'+encodeURIComponent(window.currentCode);
+  $('modal-bg').classList.add('show');
+  $('modal-box').innerHTML=`
+    <h3>Scan to join</h3>
+    <p class="mdesc">Scanning this QR code will open Ghost with the code pre-filled.</p>
+    <div style="text-align:center"><div class="qr-frame" id="qr-target"></div></div>
+    <p style="font-size:11px;color:var(--text3);word-break:break-all;margin-top:16px;font-family:var(--mono)">${link}</p>
+    <div class="btn-row" style="margin-top:16px"><button class="btn btn-ghost btn-block" onclick="closeModal()">Close</button></div>`;
+  const q=qrcode(0,'L');q.addData(link);q.make();
+  $('qr-target').innerHTML=q.createSvgTag({cellSize:4,margin:1});
 }
 
-function showQR(){
-  const baseUrl = location.origin + location.pathname;
-  const link = baseUrl + '#' + encodeURIComponent(window.currentCode);
+function closeModal(){$('modal-bg').classList.remove('show')}
 
-  const modal = $('modal-content');
-  $('modal-overlay').classList.add('active');
-  modal.innerHTML = `
-    <h3>Scan to Join</h3>
-    <div class="qr-wrap" id="modal-qr" style="margin:24px auto"></div>
-    <p style="font-size:12px;word-break:break-all;color:var(--text-secondary)">${link}</p>
-    <button class="btn btn-primary" onclick="closeModal()" style="margin-top:16px">Close</button>
-  `;
-
-  const qr = qrcode(0, 'L');
-  qr.addData(link);
-  qr.make();
-  $('modal-qr').innerHTML = qr.createSvgTag({cellSize: 4, margin: 1});
-}
-
-function closeModal(){
-  $('modal-overlay').classList.remove('active');
-}
-
-// ============== CHAT UI ==============
+// ============== CHAT ==============
 function showChat(){
-  $('app').innerHTML=`<div id="chat-container">
-    <div id="chat-header">
-      <h2>👻 Ghost <span class="badge${S.isAdmin?' admin':''}">${S.isAdmin?'Admin':'Member'}</span></h2>
-      <div id="header-actions">
-        <button class="btn btn-small btn-secondary" onclick="toggleSettings()">⚙️</button>
-        <button class="btn btn-small btn-danger" onclick="leaveRoom()">Leave</button>
-      </div>
-    </div>
-    <div id="messages"></div>
-    <div id="input-area">
-      <div id="selection-bar">
-        <span id="selection-info">0 selected</span>
-        <div id="selection-actions">
-          <button class="btn btn-small btn-secondary" onclick="copySelected()">Copy</button>
-          <button class="btn btn-small btn-secondary" onclick="downloadSelected()">Download</button>
-          <button class="btn btn-small" onclick="clearSelection()">Cancel</button>
+  $('app').innerHTML=`<div id="chat">
+    <div id="chat-head">
+      <div class="room-info">
+        <div class="status-dot"></div>
+        <div>
+          <div class="room-name">Ghost</div>
+          <div class="room-meta">${S.isAdmin?'Admin':'Member'} &middot; E2EE &middot; ${S.roomId.slice(0,8)}</div>
         </div>
       </div>
-      <div id="input-row">
-        <button id="file-btn" onclick="selectFile()" title="Send file">📎</button>
-        <input type="file" id="file-input" style="display:none" onchange="handleFileSelect(event)">
-        <input id="msg-input" placeholder="Type a message..." autocomplete="off">
-        <button class="btn btn-primary" id="send-btn" onclick="sendMsg()">Send</button>
+      <div class="actions">
+        <button class="icon-btn" onclick="openDrawer()" title="Settings">${ICO.settings}</button>
+        <button class="icon-btn" style="color:var(--red)" onclick="leaveRoom()" title="Leave">${ICO.x}</button>
       </div>
     </div>
+    <div id="sel-bar"><span id="sel-info">0 selected</span><div class="sel-actions">
+      <button class="btn btn-sm btn-ghost" onclick="copySelected()">Copy</button>
+      <button class="btn btn-sm btn-ghost" onclick="dlSelected()">Download</button>
+      <button class="btn btn-sm btn-ghost" onclick="clearSel()">Cancel</button>
+    </div></div>
+    <div id="msgs"></div>
+    <div id="input-bar">
+      <input type="file" id="file-in" style="display:none" onchange="handleFileSelect(event)" multiple>
+      <button class="icon-btn" onclick="$('file-in').click()" title="Attach file">${ICO.clip}</button>
+      <input id="msg-in" placeholder="Message..." autocomplete="off">
+      <button id="send" onclick="sendMsg()">${ICO.send2}</button>
+    </div>
   </div>`;
-
-  const input=$('msg-input');
-  input.onkeypress=e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendMsg()}};
-  input.focus();
-
-  setupDragDrop();
-  loadStoredMessages();
-  addMsg('Ghost','Connected. Messages expire after 4 hours.',false,'system');
+  $('msg-in').onkeydown=e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendMsg()}};
+  $('msg-in').focus();
+  setupDragDrop();loadStoredMessages();
+  addSystemMsg('Connected. End-to-end encrypted. Messages expire after 4 hours.');
 }
 
 function setupDragDrop(){
-  const msgs=$('messages');
-  const overlay=$('drop-overlay');
-
-  document.body.ondragover=e=>{e.preventDefault();overlay.classList.add('active')};
-  document.body.ondragleave=e=>{if(e.target===overlay)overlay.classList.remove('active')};
-  document.body.ondrop=e=>{
-    e.preventDefault();
-    overlay.classList.remove('active');
-    if(e.dataTransfer.files.length)handleFiles(e.dataTransfer.files);
-  };
-
-  msgs.onclick=e=>{
-    const msgEl=e.target.closest('.message');
-    if(!msgEl)return;
-    if(e.ctrlKey||e.metaKey||e.shiftKey){
-      e.preventDefault();
-      toggleMessageSelect(msgEl);
-    }
-  };
+  const d=$('drop');
+  document.body.ondragover=e=>{e.preventDefault();d.classList.add('show')};
+  document.body.ondragleave=e=>{if(e.target===d)d.classList.remove('show')};
+  document.body.ondrop=e=>{e.preventDefault();d.classList.remove('show');if(e.dataTransfer.files.length)handleFiles(e.dataTransfer.files)};
+  $('msgs').onclick=e=>{const m=e.target.closest('.msg');if(!m||m.classList.contains('system'))return;if(e.ctrlKey||e.metaKey||e.shiftKey){e.preventDefault();toggleSel(m)}};
 }
 
-function setupDC(dc,isAdmin){
+function setupDC(dc){
   S.dc=dc;
   dc.onopen=()=>showChat();
-  dc.onmessage=async e=>{
-    try{
-      const payload=JSON.parse(await aesDec(S.roomKey,e.data));
-      await handleMessage(payload);
-    }catch(err){console.error('Decryption failed:',err)}
-  };
-  dc.onclose=()=>{addMsg('Ghost','Disconnected',false,'system');};
+  dc.onmessage=async e=>{try{await handleMessage(JSON.parse(await aesDec(S.roomKey,e.data)))}catch(err){console.error('decrypt fail:',err)}};
+  dc.onclose=()=>addSystemMsg('Peer disconnected.');
 }
 
 async function handleMessage(payload){
-  // Verify signature
   if(payload.sig&&payload.fromPubKey){
-    const pubKey=await impECDSAPub(payload.fromPubKey);
-    const dataStr=JSON.stringify(payload.data);
-    const valid=await verifyData(pubKey,dataStr,payload.sig);
-    if(!valid){console.error('Invalid signature');return}
+    const pk=await impECDSAPub(payload.fromPubKey);
+    if(!await verifyData(pk,JSON.stringify(payload.data),payload.sig)){console.error('bad sig');return}
   }
-
-  const msg=payload.data;
-
-  switch(msg.type){
-    case 'chat':
-      addMsg(msg.nick,msg.text,false,msg.from,S.isAdmin&&msg.fromPubKey===S.adminPubKey,msg.ts);
-      storeMessage(msg);
-      break;
-    case 'file':
-      handleFileMessage(msg);
-      break;
-    case 'admin-pubkey':
-      if(!S.isAdmin)S.adminPubKey=msg.pubKey;
-      break;
-    case 'admin-action':
-      await handleAdminAction(msg);
-      break;
-    case 'self-destruct':
-      handleSelfDestruct();
-      break;
+  const m=payload.data;
+  switch(m.type){
+    case 'chat':addMsg(m.nick,m.text,false,m.ts);storeMessage(m);break;
+    case 'file':addFileMsg(m.nick,m.name,m.size,false,m.fileId);break;
+    case 'admin-action':await handleAdminAction(m);break;
+    case 'self-destruct':handleSelfDestruct();break;
   }
 }
 
 async function sendMsg(){
-  const input=$('msg-input');
-  const text=input.value.trim();
-  if(!text)return;
+  const inp=$('msg-in');const text=inp.value.trim();if(!text)return;
   if(!S.dc||S.dc.readyState!=='open'){alert('Not connected');return}
-
-  input.value='';
-  const msg={
-    type:'chat',
-    from:S.myId,
-    nick:S.nick,
-    text,
-    ts:Date.now()
-  };
-
-  const payload=await signPayload(msg);
-  S.dc.send(await aesEnc(S.roomKey,JSON.stringify(payload)));
-  addMsg(S.nick,text,true,S.myId,false,msg.ts);
-  storeMessage({...msg,self:true});
+  inp.value='';
+  const m={type:'chat',from:S.myId,nick:S.nick,text,ts:Date.now()};
+  const p=await signPayload(m);
+  S.dc.send(await aesEnc(S.roomKey,JSON.stringify(p)));
+  addMsg(S.nick,text,true,m.ts);storeMessage({...m,self:true});
 }
 
 async function signPayload(data){
-  const dataStr=JSON.stringify(data);
-  const sig=await signData(S.myKeyPair.privateKey,dataStr);
-  return{data,sig,fromPubKey:S.myPubKey};
+  return{data,sig:await signData(S.myKeyPair.privateKey,JSON.stringify(data)),fromPubKey:S.myPubKey};
 }
 
-function addMsg(nick,text,self,fromId,isAdminMsg,ts){
-  const div=document.createElement('div');
-  div.className='message '+(self?'sent':'received');
-  div.dataset.msgId=ts||Date.now();
-  div.dataset.from=fromId||'unknown';
+function addMsg(nick,text,self,ts){
+  const d=document.createElement('div');
+  d.className='msg '+(self?'out':'in');
+  d.dataset.ts=ts||Date.now();
+  const t=new Date(ts||Date.now()).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
+  d.innerHTML=`${self?'':`<div class="who">${esc(nick)}</div>`}<div>${esc(text)}</div><div class="when">${t}</div>`;
+  const c=$('msgs');if(!c)return;c.appendChild(d);c.scrollTop=c.scrollHeight;
+}
 
-  const timeStr=ts?new Date(ts).toLocaleTimeString():new Date().toLocaleTimeString();
-  const adminBadge=isAdminMsg?'<span style="color:var(--warning)">👑</span> ':'';
-
-  div.innerHTML=`<div class="nick">${adminBadge}${nick}</div><div>${escapeHtml(text)}</div><div class="meta">${timeStr}</div>`;
-
-  const msgs=$('messages');
-  if(!msgs)return;
-  msgs.appendChild(div);
-  msgs.scrollTop=msgs.scrollHeight;
+function addSystemMsg(text){
+  const d=document.createElement('div');d.className='msg system';d.textContent=text;
+  const c=$('msgs');if(!c)return;c.appendChild(d);c.scrollTop=c.scrollHeight;
 }
 
 // ============== FILES ==============
-function selectFile(){$('file-input').click()}
-
-async function handleFileSelect(e){
-  if(e.target.files.length)await handleFiles(e.target.files);
-}
+function handleFileSelect(e){if(e.target.files.length)handleFiles(e.target.files)}
 
 async function handleFiles(files){
-  for(const file of files){
+  for(const f of files){
     const reader=new FileReader();
     reader.onload=async e=>{
-      const data=e.target.result;
-      const hash=await hashData(data);
-      const fileId=rnd(16);
-
-      const msg={
-        type:'file',
-        from:S.myId,
-        nick:S.nick,
-        fileId,
-        name:file.name,
-        size:file.size,
-        mime:file.type,
-        hash,
-        ts:Date.now()
-      };
-
-      S.files.set(fileId,{name:file.name,data,mime:file.type});
-
-      const payload=await signPayload(msg);
-      S.dc.send(await aesEnc(S.roomKey,JSON.stringify(payload)));
-
-      addFileMessage(S.nick,file.name,file.size,true,fileId);
-    };
-    reader.readAsDataURL(file);
+      const data=e.target.result;const fileId=rnd(16);
+      S.files.set(fileId,{name:f.name,data,mime:f.type});
+      const m={type:'file',from:S.myId,nick:S.nick,fileId,name:f.name,size:f.size,mime:f.type,ts:Date.now()};
+      const p=await signPayload(m);S.dc.send(await aesEnc(S.roomKey,JSON.stringify(p)));
+      addFileMsg(S.nick,f.name,f.size,true,fileId);
+    };reader.readAsDataURL(f);
   }
 }
 
-function addFileMessage(nick,name,size,self,fileId){
-  const div=document.createElement('div');
-  div.className='message '+(self?'sent':'received');
-  div.dataset.fileId=fileId;
-
-  const sizeStr=formatBytes(size);
-
-  div.innerHTML=`<div class="nick">${nick}</div>
-    <div class="file-attachment" onclick="downloadFile('${fileId}')">
-      <span>📄</span>
-      <div>
-        <div>${escapeHtml(name)}</div>
-        <div style="font-size:12px;opacity:0.7">${sizeStr}</div>
-      </div>
+function addFileMsg(nick,name,size,self,fileId){
+  const d=document.createElement('div');d.className='msg '+(self?'out':'in');d.dataset.fileId=fileId;d.dataset.ts=Date.now();
+  d.innerHTML=`${self?'':`<div class="who">${esc(nick)}</div>`}
+    <div class="file-chip" onclick="dlFile('${fileId}')">
+      <div class="f-icon">${ICO.file}</div>
+      <div class="f-info"><div>${esc(name)}</div><div class="f-size">${fmtBytes(size)}</div></div>
     </div>`;
-
-  const msgs=$('messages');
-  if(!msgs)return;
-  msgs.appendChild(div);
-  msgs.scrollTop=msgs.scrollHeight;
+  const c=$('msgs');if(!c)return;c.appendChild(d);c.scrollTop=c.scrollHeight;
 }
 
-function handleFileMessage(msg){
-  addFileMessage(msg.nick,msg.name,msg.size,false,msg.fileId);
-  // Store file metadata, actual data comes via data channel chunks or webrtc data
-  // For now, simple approach: files are sent inline via data URL in follow-up message
+function dlFile(id){
+  const f=S.files.get(id);if(!f){alert('File not available');return}
+  const a=document.createElement('a');a.href=f.data;a.download=f.name;a.click();
 }
 
-function downloadFile(fileId){
-  const file=S.files.get(fileId);
-  if(!file)return alert('File not available');
-
-  const a=document.createElement('a');
-  a.href=file.data;
-  a.download=file.name;
-  a.click();
-}
-
-async function hashData(data){
-  const buf=await fetch(data).then(r=>r.arrayBuffer());
-  const hash=await crypto.subtle.digest('SHA-256',buf);
-  return b64url(hash);
-}
-
-function formatBytes(b){
-  if(b<1024)return b+' B';
-  if(b<1024*1024)return(b/1024).toFixed(1)+' KB';
-  return(b/(1024*1024)).toFixed(1)+' MB';
-}
+function fmtBytes(b){if(b<1024)return b+' B';if(b<1048576)return(b/1024).toFixed(1)+' KB';return(b/1048576).toFixed(1)+' MB'}
 
 // ============== SELECTION ==============
-function toggleMessageSelect(el){
-  const id=el.dataset.msgId;
-  if(S.selectedMessages.has(id)){
-    S.selectedMessages.delete(id);
-    el.classList.remove('selected');
-  }else{
-    S.selectedMessages.add(id);
-    el.classList.add('selected');
-  }
-  updateSelectionBar();
+function toggleSel(el){
+  const id=el.dataset.ts;
+  if(S.selectedMessages.has(id)){S.selectedMessages.delete(id);el.classList.remove('selected')}
+  else{S.selectedMessages.add(id);el.classList.add('selected')}
+  updSel();
 }
-
-function updateSelectionBar(){
-  const bar=$('selection-bar');
-  const info=$('selection-info');
-  if(S.selectedMessages.size>0){
-    bar.classList.add('active');
-    info.textContent=`${S.selectedMessages.size} selected`;
-  }else{
-    bar.classList.remove('active');
-  }
+function updSel(){
+  const b=$('sel-bar');const n=S.selectedMessages.size;
+  if(n>0){b.classList.add('show');$('sel-info').textContent=n+' selected'}else b.classList.remove('show');
 }
-
-function clearSelection(){
-  S.selectedMessages.clear();
-  document.querySelectorAll('.message.selected').forEach(el=>el.classList.remove('selected'));
-  updateSelectionBar();
-}
-
+function clearSel(){S.selectedMessages.clear();document.querySelectorAll('.msg.selected').forEach(e=>e.classList.remove('selected'));updSel()}
 function copySelected(){
-  const texts=[];
-  document.querySelectorAll('.message').forEach(el=>{
-    if(S.selectedMessages.has(el.dataset.msgId)){
-      const nick=el.querySelector('.nick').textContent;
-      const text=el.querySelector('div:nth-child(2)').textContent;
-      texts.push(`${nick}: ${text}`);
-    }
-  });
-  navigator.clipboard.writeText(texts.join('\n'));
-  clearSelection();
+  const t=[];document.querySelectorAll('.msg').forEach(e=>{
+    if(S.selectedMessages.has(e.dataset.ts)){const w=e.querySelector('.who');const txt=e.childNodes[w?1:0];t.push((w?w.textContent+': ':'')+txt.textContent)}
+  });navigator.clipboard.writeText(t.join('\n'));clearSel();
 }
+function dlSelected(){document.querySelectorAll('.msg').forEach(e=>{if(S.selectedMessages.has(e.dataset.ts)&&e.dataset.fileId)dlFile(e.dataset.fileId)});clearSel()}
 
-function downloadSelected(){
-  // Download files from selected messages
-  document.querySelectorAll('.message').forEach(el=>{
-    if(S.selectedMessages.has(el.dataset.msgId)&&el.dataset.fileId){
-      downloadFile(el.dataset.fileId);
-    }
-  });
-  clearSelection();
-}
-
-// ============== ADMIN ACTIONS ==============
+// ============== ADMIN ==============
 async function handleAdminAction(msg){
-  // Verify admin signature
-  const adminKey=await impECDSAPub(S.adminPubKey);
-  const valid=await verifyData(adminKey,JSON.stringify(msg.action),msg.sig);
-  if(!valid){console.error('Invalid admin signature');return}
-
-  switch(msg.action.type){
-    case 'kick':
-      if(msg.action.target===S.myId){
-        alert('You have been removed by admin');
-        leaveRoom();
-      }
-      break;
-    case 'self-destruct':
-      handleSelfDestruct();
-      break;
-  }
+  const ak=await impECDSAPub(S.adminPubKey);
+  if(!await verifyData(ak,JSON.stringify(msg.action),msg.sig)){console.error('bad admin sig');return}
+  if(msg.action.type==='self-destruct')handleSelfDestruct();
+  if(msg.action.type==='kick'&&msg.action.target===S.myId){alert('Removed by admin');leaveRoom()}
 }
-
 async function sendAdminAction(action){
-  if(!S.isAdmin){alert('Only admin can do this');return}
+  if(!S.isAdmin)return;
   const sig=await signData(S.myKeyPair.privateKey,JSON.stringify(action));
-  const msg={type:'admin-action',action,sig};
-  S.dc.send(await aesEnc(S.roomKey,JSON.stringify(msg)));
+  S.dc.send(await aesEnc(S.roomKey,JSON.stringify({type:'admin-action',action,sig})));
 }
-
 function handleSelfDestruct(){
-  Storage.clear();
-  S.messages=[];
-  S.files.clear();
-  document.getElementById('messages').innerHTML='';
-  addMsg('Ghost','Room destroyed by admin. All messages deleted.',false,'system');
-  setTimeout(()=>{alert('Room destroyed');leaveRoom()},2000);
+  Store.clear();S.files.clear();
+  const m=$('msgs');if(m)m.innerHTML='';
+  addSystemMsg('Room destroyed. All data wiped.');
+  setTimeout(()=>leaveRoom(),2000);
 }
 
-// ============== SETTINGS ==============
-function toggleSettings(){
-  const panel=$('settings-panel');
-  const content=$('settings-content');
-
-  if(panel.classList.contains('open')){
-    panel.classList.remove('open');
-    return;
-  }
-
-  panel.classList.add('open');
-
-  let html=`<div class="section">
-    <h4>Room Info</h4>
-    <div class="setting-row"><label>Room ID</label><span style="font-family:monospace;font-size:12px">${S.roomId}</span></div>
-    <div class="setting-row"><label>Your Role</label><span>${S.isAdmin?'Admin':'Member'}</span></div>
-    <div class="setting-row"><label>Peers</label><span>${S.peers.size+1}</span></div>
+// ============== DRAWER ==============
+function openDrawer(){
+  $('drawer').classList.add('open');$('drawer-overlay').classList.add('show');
+  let h=`<div class="drawer-section"><h4>Room</h4>
+    <div class="drawer-row"><span>Room ID</span><span class="val">${S.roomId}</span></div>
+    <div class="drawer-row"><span>Role</span><span class="badge ${S.isAdmin?'badge-amber':'badge-blue'}">${S.isAdmin?'Admin':'Member'}</span></div>
+    <div class="drawer-row"><span>Encryption</span><span class="val">AES-256-GCM</span></div>
+    <div class="drawer-row"><span>Signing</span><span class="val">ECDSA P-256</span></div>
   </div>`;
-
   if(S.isAdmin){
-    html+=`<div class="section">
-      <h4>Admin Actions</h4>
-      <button class="btn btn-danger" onclick="confirmSelfDestruct()">Destroy Room</button>
-      <button class="btn btn-secondary" style="margin-top:8px" onclick="showInviteCode()">Show Invite Code</button>
+    h+=`<div class="drawer-section"><h4>Admin</h4>
+      <button class="btn btn-ghost btn-block btn-sm" onclick="showInviteCode()" style="margin-bottom:8px">Show invite code</button>
+      <button class="btn btn-danger btn-block btn-sm" onclick="confirmDestroy()">Destroy room</button>
     </div>`;
   }
-
-  html+=`<div class="section">
-    <h4>Settings</h4>
-    <div class="setting-row">
-      <label>Message TTL (4h default)</label>
-      <div class="toggle" id="ttl-toggle" onclick="toggleTTL()"></div>
-    </div>
-    <button class="btn btn-secondary" style="margin-top:16px" onclick="exportMessages()">Export Messages</button>
+  h+=`<div class="drawer-section"><h4>Data</h4>
+    <div class="drawer-row"><span>Message TTL</span><span class="val">4 hours</span></div>
+    <button class="btn btn-ghost btn-block btn-sm" onclick="exportMsgs()" style="margin-top:8px">Export messages</button>
   </div>`;
-
-  content.innerHTML=html;
+  $('drawer-body').innerHTML=h;
 }
+function closeDrawer(){$('drawer').classList.remove('open');$('drawer-overlay').classList.remove('show')}
 
-function confirmSelfDestruct(){
-  if(!confirm('Destroy room and delete all messages for everyone?'))return;
-  sendAdminAction({type:'self-destruct',ts:Date.now()});
-  handleSelfDestruct();
-}
-
-function showInviteCode(){
-  // Regenerate invite code
-  alert('Invite code:\n'+window.currentCode);
-}
-
-function toggleTTL(){
-  const t=$('ttl-toggle');
-  t.classList.toggle('active');
-}
-
-function exportMessages(){
-  const data=Storage.get('messages_'+S.roomId)||[];
-  const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
-  const url=URL.createObjectURL(blob);
-  const a=document.createElement('a');
-  a.href=url;
-  a.download=`ghost-${S.roomId}-${Date.now()}.json`;
-  a.click();
-  URL.revokeObjectURL(url);
+function confirmDestroy(){if(!confirm('Destroy room and wipe all messages for everyone?'))return;sendAdminAction({type:'self-destruct',ts:Date.now()});handleSelfDestruct()}
+function showInviteCode(){if(window.currentCode)alert(window.currentCode)}
+function exportMsgs(){
+  const d=Store.get('msg_'+S.roomId)||[];
+  const b=new Blob([JSON.stringify(d,null,2)],{type:'application/json'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='ghost-'+S.roomId+'.json';a.click();
 }
 
 // ============== STORAGE ==============
 function saveSession(){
-  Storage.set('session',{
-    roomId:S.roomId,
-    roomKey:expAESKey(S.roomKey),
-    myId:S.myId,
-    myPubKey:S.myPubKey,
-    adminPubKey:S.adminPubKey,
-    isAdmin:S.isAdmin,
-    nick:S.nick,
-    expiresAt:S.expiresAt
-  });
+  Store.set('session',{roomId:S.roomId,roomKey:expAESKey(S.roomKey),myId:S.myId,myPubKey:S.myPubKey,adminPubKey:S.adminPubKey,isAdmin:S.isAdmin,nick:S.nick});
 }
-
 async function restoreSession(){
-  const sess=Storage.get('session');
-  if(!sess){alert('No saved session');return}
-  if(sess.expiresAt&&Date.now()>sess.expiresAt){Storage.del('session');alert('Session expired');return}
-
-  S.roomId=sess.roomId;
-  S.roomKey=await impAESKey(sess.roomKey);
-  S.myId=sess.myId;
-  S.myPubKey=sess.myPubKey;
-  S.adminPubKey=sess.adminPubKey;
-  S.isAdmin=sess.isAdmin;
-  S.nick=sess.nick;
-
-  // Need to re-establish connection
-  showHome();
-  alert('Session restored. Use Join to reconnect with a new answer code.');
+  const s=Store.get('session');if(!s){alert('No saved session');return}
+  S.roomId=s.roomId;S.roomKey=await impAESKey(s.roomKey);S.myId=s.myId;S.myPubKey=s.myPubKey;
+  S.adminPubKey=s.adminPubKey;S.isAdmin=s.isAdmin;S.nick=s.nick;
+  showHome();alert('Session restored. Join with a new code to reconnect.');
 }
-
-function storeMessage(msg){
-  const key='messages_'+S.roomId;
-  const msgs=Storage.get(key)||[];
-  msgs.push({...msg,ts:msg.ts||Date.now()});
-  // Clean old messages
-  const cutoff=Date.now()-S.msgTTL;
-  const filtered=msgs.filter(m=>m.ts>cutoff);
-  Storage.set(key,filtered);
+function storeMessage(m){
+  const k='msg_'+S.roomId;const arr=Store.get(k)||[];
+  arr.push({...m,ts:m.ts||Date.now()});
+  Store.set(k,arr.filter(x=>x.ts>Date.now()-S.msgTTL));
 }
-
 function loadStoredMessages(){
-  const key='messages_'+S.roomId;
-  const msgs=Storage.get(key)||[];
-  const cutoff=Date.now()-S.msgTTL;
-  for(const m of msgs){
-    if(m.ts>cutoff){
-      addMsg(m.nick,m.text,m.self,m.from,false,m.ts);
-    }
-  }
+  const arr=Store.get('msg_'+S.roomId)||[];const cut=Date.now()-S.msgTTL;
+  arr.filter(m=>m.ts>cut).forEach(m=>addMsg(m.nick,m.text,m.self,m.ts));
 }
+function leaveRoom(){if(S.dc)S.dc.close();if(S.pc)S.pc.close();S.dc=null;S.pc=null;Store.del('session');showHome()}
 
-function leaveRoom(){
-  if(S.dc)S.dc.close();
-  if(S.pc)S.pc.close();
-  S.dc=null;
-  S.pc=null;
-  Storage.del('session');
-  showHome();
-}
-
-// ============== UTILS ==============
-function escapeHtml(t){
-  const d=document.createElement('div');
-  d.textContent=t;
-  return d.innerHTML;
-}
-
-function sendToPeer(pubKey,msg){
-  // In mesh, broadcast to all, they filter by pubkey
-  if(S.dc&&S.dc.readyState==='open'){
-    S.dc.send(JSON.stringify({...msg,to:pubKey}));
-  }
-}
+// ============== UTIL ==============
+function esc(t){const d=document.createElement('div');d.textContent=t;return d.innerHTML}
 
 // ============== INIT ==============
-function checkUrlHash(){
-  const hash=location.hash.slice(1);
-  if(!hash)return false;
-
-  if(hash.startsWith('A=')){
-    // Answer code for admin
-    const code=decodeURIComponent(hash.slice(2));
-    showHome();
-    setTimeout(()=>{
-      showAnswer();
-      $('ans-in').value=code;
-    },100);
-    return true;
-  }else{
-    // Invite code for joiner
-    const code=decodeURIComponent(hash);
-    if(code.startsWith('G:')){
-      showJoin(code);
-      return true;
-    }
-  }
-  return false;
-}
-
-if(!checkUrlHash())showHome();
+(function(){
+  const h=location.hash.slice(1);if(!h){showHome();return}
+  if(h.startsWith('A=')){showHome();setTimeout(()=>{doCreate().then(()=>{$('ans-in').value=decodeURIComponent(h.slice(2))})},100);return}
+  const code=decodeURIComponent(h);
+  if(code.startsWith('G:')){showJoin(code);return}
+  showHome();
+})();
 </script>
 </body>
 </html>
