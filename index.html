@@ -620,31 +620,6 @@ function connectSignaling(roomId, onMessage) {
   }
 }
 
-  ws.onopen = () => {
-    console.log('[signal] connected');
-    // Flush queued messages
-    while (wsQueue.length > 0 && ws.readyState === WebSocket.OPEN) {
-      ws.send(JSON.stringify(wsQueue.shift()));
-    }
-  };
-
-  ws.onmessage = (e) => {
-    try {
-      const msg = JSON.parse(e.data);
-      onMessage(msg);
-    } catch (err) {}
-  };
-
-  ws.onclose = () => {
-    console.log('[signal] disconnected');
-    ws = null;
-  };
-
-  ws.onerror = (e) => {
-    console.error('[signal] error', e);
-  };
-}
-
 function signalSend(msg) {
   if (ws && ws.readyState === WebSocket.OPEN) {
     ws.send(JSON.stringify(msg));
