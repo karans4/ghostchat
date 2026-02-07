@@ -17,6 +17,8 @@
   --accent:#60a5fa;
   --accent-hover:#3b82f6;
   --success:#34d399;
+  --warning:#fbbf24;
+  --danger:#f87171;
   --font:'Inter',system-ui,sans-serif
 }
 
@@ -30,7 +32,6 @@ html,body{
   color:var(--text)
 }
 
-/* Animated space background */
 body::before{
   content:'';
   position:fixed;
@@ -42,7 +43,6 @@ body::before{
   z-index:-2
 }
 
-/* Stars */
 body::after{
   content:'';
   position:fixed;
@@ -61,12 +61,8 @@ body::after{
   z-index:-1
 }
 
-@keyframes twinkle{
-  0%,100%{opacity:0.5}
-  50%{opacity:1}
-}
+@keyframes twinkle{0%,100%{opacity:0.5}50%{opacity:1}}
 
-/* Layout */
 .center{
   display:flex;
   justify-content:center;
@@ -80,7 +76,7 @@ body::after{
   border:1px solid var(--border);
   border-radius:20px;
   padding:48px;
-  max-width:420px;
+  max-width:480px;
   width:100%;
   text-align:center;
   box-shadow:0 25px 50px -12px rgba(0,0,0,0.5),0 0 0 1px rgba(255,255,255,0.05)
@@ -99,22 +95,15 @@ body::after{
   box-shadow:0 8px 32px rgba(96,165,250,0.3)
 }
 
-h1{
-  font-size:32px;
-  font-weight:600;
-  margin-bottom:8px;
-  letter-spacing:-0.5px
+.logo.admin{
+  background:linear-gradient(135deg,var(--warning),var(--danger));
+  box-shadow:0 8px 32px rgba(251,191,36,0.3)
 }
 
-.subtitle{
-  color:var(--text-secondary);
-  font-size:15px;
-  margin-bottom:32px;
-  line-height:1.5
-}
+h1{font-size:32px;font-weight:600;margin-bottom:8px;letter-spacing:-0.5px}
+.subtitle{color:var(--text-secondary);font-size:15px;margin-bottom:32px;line-height:1.5}
 
-/* Inputs */
-input,textarea{
+input,textarea,select{
   width:100%;
   background:var(--bg);
   border:1px solid var(--border);
@@ -128,16 +117,13 @@ input,textarea{
   margin:8px 0
 }
 
-input:focus,textarea:focus{
+input:focus,textarea:focus,select:focus{
   border-color:var(--accent);
   box-shadow:0 0 0 3px rgba(96,165,250,0.1)
 }
 
-input::placeholder,textarea::placeholder{
-  color:var(--text-secondary)
-}
+input::placeholder,textarea::placeholder{color:var(--text-secondary)}
 
-/* Buttons */
 .btn{
   width:100%;
   padding:14px 24px;
@@ -168,12 +154,26 @@ input::placeholder,textarea::placeholder{
   border:1px solid var(--border)
 }
 
-.btn-secondary:hover{
-  background:var(--surface-hover);
-  border-color:var(--text-secondary)
+.btn-secondary:hover{background:var(--surface-hover);border-color:var(--text-secondary)}
+
+.btn-danger{
+  background:var(--danger);
+  color:#0b0d14
 }
 
-/* Code display */
+.btn-danger:hover{
+  background:#ef4444;
+  transform:translateY(-1px);
+  box-shadow:0 8px 24px rgba(248,113,113,0.35)
+}
+
+.btn-small{
+  width:auto;
+  padding:8px 16px;
+  font-size:13px;
+  margin-top:0
+}
+
 .code-box{
   background:var(--bg);
   border:1px solid var(--border);
@@ -185,7 +185,8 @@ input::placeholder,textarea::placeholder{
   margin:16px 0;
   color:var(--text-secondary);
   max-height:120px;
-  overflow-y:auto
+  overflow-y:auto;
+  text-align:left
 }
 
 .qr-wrap{
@@ -197,35 +198,48 @@ input::placeholder,textarea::placeholder{
   box-shadow:0 8px 32px rgba(0,0,0,0.3)
 }
 
-.status{
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  gap:8px;
-  color:var(--text-secondary);
-  font-size:13px;
-  margin-top:16px
-}
-
-.dot{
-  width:8px;
-  height:8px;
-  border-radius:50%;
-  background:var(--success);
-  animation:pulse 2s infinite
-}
-
-@keyframes pulse{
-  0%,100%{opacity:1}
-  50%{opacity:0.5}
-}
-
 /* Chat UI */
 #chat-container{
   position:fixed;
   inset:0;
   display:flex;
   flex-direction:column
+}
+
+#chat-header{
+  padding:16px 24px;
+  background:var(--surface);
+  border-bottom:1px solid var(--border);
+  display:flex;
+  justify-content:space-between;
+  align-items:center
+}
+
+#chat-header h2{
+  font-size:16px;
+  font-weight:600;
+  display:flex;
+  align-items:center;
+  gap:8px
+}
+
+#chat-header .badge{
+  font-size:11px;
+  padding:4px 8px;
+  border-radius:6px;
+  background:var(--border);
+  color:var(--text-secondary);
+  font-weight:500
+}
+
+#chat-header .badge.admin{
+  background:var(--warning);
+  color:#0b0d14
+}
+
+#header-actions{
+  display:flex;
+  gap:8px
 }
 
 #messages{
@@ -237,13 +251,20 @@ input::placeholder,textarea::placeholder{
   gap:12px
 }
 
+#messages.drag-over{
+  background:rgba(96,165,250,0.1);
+  outline:2px dashed var(--accent);
+  outline-offset:-12px
+}
+
 .message{
   max-width:75%;
   padding:12px 16px;
   border-radius:18px;
   font-size:15px;
   line-height:1.4;
-  animation:slideIn 0.3s ease
+  animation:slideIn 0.3s ease;
+  position:relative
 }
 
 @keyframes slideIn{
@@ -274,12 +295,49 @@ input::placeholder,textarea::placeholder{
   opacity:0.7
 }
 
+.message .meta{
+  font-size:11px;
+  opacity:0.5;
+  margin-top:4px;
+  display:flex;
+  gap:8px;
+  align-items:center
+}
+
+.message .file-attachment{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  padding:8px 12px;
+  background:rgba(0,0,0,0.2);
+  border-radius:8px;
+  margin-top:8px;
+  cursor:pointer;
+  transition:all 0.2s
+}
+
+.message .file-attachment:hover{
+  background:rgba(0,0,0,0.3)
+}
+
+.message.selected{
+  outline:2px solid var(--accent);
+  outline-offset:2px
+}
+
 #input-area{
-  padding:20px 24px;
+  padding:16px 24px;
   background:var(--surface);
   border-top:1px solid var(--border);
   display:flex;
+  flex-direction:column;
   gap:12px
+}
+
+#input-row{
+  display:flex;
+  gap:12px;
+  align-items:center
 }
 
 #msg-input{
@@ -287,90 +345,371 @@ input::placeholder,textarea::placeholder{
   margin:0
 }
 
-#send-btn{
+#send-btn, #file-btn{
   width:auto;
   margin:0;
-  padding:14px 28px
+  padding:14px 20px
 }
+
+#file-btn{
+  background:transparent;
+  border:1px solid var(--border);
+  color:var(--text);
+  font-size:20px;
+  line-height:1;
+  padding:12px 16px
+}
+
+#file-btn:hover{background:var(--surface-hover)}
+
+#selection-bar{
+  display:none;
+  justify-content:space-between;
+  align-items:center;
+  padding:12px 16px;
+  background:var(--bg);
+  border-radius:8px;
+  margin-bottom:8px
+}
+
+#selection-bar.active{display:flex}
+
+#selection-info{
+  font-size:14px;
+  color:var(--text-secondary)
+}
+
+#selection-actions{
+  display:flex;
+  gap:8px
+}
+
+#drop-overlay{
+  position:fixed;
+  inset:0;
+  background:rgba(11,13,20,0.9);
+  display:none;
+  flex-direction:column;
+  justify-content:center;
+  align-items:center;
+  z-index:100;
+  backdrop-filter:blur(4px)
+}
+
+#drop-overlay.active{display:flex}
+
+#drop-overlay .drop-icon{
+  font-size:64px;
+  margin-bottom:24px
+}
+
+#drop-overlay p{
+  font-size:20px;
+  color:var(--text-secondary)
+}
+
+/* Settings panel */
+#settings-panel{
+  position:fixed;
+  top:0;
+  right:-400px;
+  width:400px;
+  height:100vh;
+  background:var(--surface);
+  border-left:1px solid var(--border);
+  padding:24px;
+  overflow-y:auto;
+  transition:right 0.3s ease;
+  z-index:50
+}
+
+#settings-panel.open{right:0}
+
+#settings-panel h3{
+  font-size:18px;
+  margin-bottom:24px;
+  display:flex;
+  justify-content:space-between;
+  align-items:center
+}
+
+#settings-panel .close-btn{
+  background:none;
+  border:none;
+  color:var(--text-secondary);
+  font-size:24px;
+  cursor:pointer
+}
+
+#settings-panel .section{
+  margin-bottom:32px;
+  padding-bottom:32px;
+  border-bottom:1px solid var(--border)
+}
+
+#settings-panel .section:last-child{border:none}
+
+#settings-panel h4{
+  font-size:14px;
+  text-transform:uppercase;
+  letter-spacing:0.5px;
+  color:var(--text-secondary);
+  margin-bottom:16px
+}
+
+.setting-row{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  margin-bottom:12px
+}
+
+.setting-row label{font-size:14px}
+
+/* Toggle switch */
+.toggle{
+  width:44px;
+  height:24px;
+  background:var(--border);
+  border-radius:12px;
+  position:relative;
+  cursor:pointer;
+  transition:background 0.2s
+}
+
+.toggle.active{background:var(--accent)}
+
+.toggle::after{
+  content:'';
+  position:absolute;
+  width:20px;
+  height:20px;
+  background:var(--text);
+  border-radius:50%;
+  top:2px;
+  left:2px;
+  transition:transform 0.2s
+}
+
+.toggle.active::after{transform:translateX(20px)}
+
+/* Member list */
+.member-list{
+  display:flex;
+  flex-direction:column;
+  gap:8px
+}
+
+.member{
+  display:flex;
+  align-items:center;
+  gap:12px;
+  padding:12px;
+  background:var(--bg);
+  border-radius:8px
+}
+
+.member .avatar{
+  width:32px;
+  height:32px;
+  border-radius:50%;
+  background:var(--accent);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:14px;
+  font-weight:600
+}
+
+.member .info{flex:1}
+
+.member .name{
+  font-size:14px;
+  font-weight:500
+}
+
+.member .role{
+  font-size:12px;
+  color:var(--text-secondary)
+}
+
+/* Modal */
+.modal-overlay{
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,0.7);
+  display:none;
+  justify-content:center;
+  align-items:center;
+  z-index:100;
+  backdrop-filter:blur(4px)
+}
+
+.modal-overlay.active{display:flex}
+
+.modal{
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:16px;
+  padding:32px;
+  max-width:420px;
+  width:90%;
+  max-height:80vh;
+  overflow-y:auto
+}
+
+.modal h3{
+  font-size:20px;
+  margin-bottom:16px
+}
+
+.modal p{
+  color:var(--text-secondary);
+  margin-bottom:24px;
+  line-height:1.5
+}
+
+.modal .btn-group{
+  display:flex;
+  gap:12px
+}
+
+.modal .btn-group .btn{flex:1;margin-top:0}
 
 .hidden{display:none}
 </style>
 </head>
 <body>
 <div id="app"></div>
+<div id="drop-overlay">
+  <div class="drop-icon">📁</div>
+  <p>Drop files to send</p>
+</div>
+<div id="settings-panel">
+  <h3>Settings <button class="close-btn" onclick="toggleSettings()">&times;</button></h3>
+  <div id="settings-content"></div>
+</div>
+<div id="modal-overlay" class="modal-overlay">
+  <div class="modal" id="modal-content"></div>
+</div>
 <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js"></script>
 <script>
-const STUN=[{urls:'stun:stun.l.google.com:19302'},{urls:'stun:stun1.l.google.com:19302'}];
-const S={pc:null,dc:null,key:null,room:null,nick:null,myId:crypto.randomUUID()};
-const $=id=>document.getElementById(id);
-const rnd=(n=4)=>[...crypto.getRandomValues(new Uint8Array(n))].map(b=>b.toString(16).padStart(2,'0')).join('');
+// ============== CRYPTO UTILS ==============
 const b64url=buf=>btoa(String.fromCharCode(...new Uint8Array(buf))).replace(/\+/g,'-').replace(/\//g,'_').replace(/=/g,'');
 const unb64=s=>{s=s.replace(/-/g,'+').replace(/_/g,'/');while(s.length%4)s+='=';return Uint8Array.from(atob(s),c=>c.charCodeAt(0))};
+const rnd=(n=4)=>[...crypto.getRandomValues(new Uint8Array(n))].map(b=>b.toString(16).padStart(2,'0')).join('');
 
-async function genKey(){return crypto.subtle.generateKey({name:'AES-GCM',length:256},true,['encrypt','decrypt'])}
-async function expKey(k){return b64url(await crypto.subtle.exportKey('raw',k))}
-async function impKey(s){return crypto.subtle.importKey('raw',unb64(s),{name:'AES-GCM'},true,['encrypt','decrypt'])}
-async function enc(k,txt){const iv=crypto.getRandomValues(new Uint8Array(12));const ct=new Uint8Array(await crypto.subtle.encrypt({name:'AES-GCM',iv},k,new TextEncoder().encode(txt)));const r=new Uint8Array(12+ct.length);r.set(iv);r.set(ct,12);return b64url(r)}
-async function dec(k,data){const buf=unb64(data),iv=buf.slice(0,12),ct=buf.slice(12);return new TextDecoder().decode(await crypto.subtle.decrypt({name:'AES-GCM',iv},k,ct))}
+async function genAESKey(){return crypto.subtle.generateKey({name:'AES-GCM',length:256},true,['encrypt','decrypt'])}
+async function expAESKey(k){return b64url(await crypto.subtle.exportKey('raw',k))}
+async function impAESKey(s){return crypto.subtle.importKey('raw',unb64(s),{name:'AES-GCM'},true,['encrypt','decrypt'])}
+async function aesEnc(k,txt){const iv=crypto.getRandomValues(new Uint8Array(12));const ct=new Uint8Array(await crypto.subtle.encrypt({name:'AES-GCM',iv},k,new TextEncoder().encode(txt)));const r=new Uint8Array(12+ct.length);r.set(iv);r.set(ct,12);return b64url(r)}
+async function aesDec(k,data){const buf=unb64(data),iv=buf.slice(0,12),ct=buf.slice(12);return new TextDecoder().decode(await crypto.subtle.decrypt({name:'AES-GCM',iv},k,ct))}
+
+async function genECDSAKey(){return crypto.subtle.generateKey({name:'ECDSA',namedCurve:'P-256'},true,['sign','verify'])}
+async function expECDSAPub(k){return b64url(await crypto.subtle.exportKey('spki',k))}
+async function impECDSAPub(s){return crypto.subtle.importKey('spki',unb64(s),{name:'ECDSA',namedCurve:'P-256'},true,['verify'])}
+async function signData(privKey,data){const sig=await crypto.subtle.sign({name:'ECDSA',hash:'SHA-256'},privKey,new TextEncoder().encode(data));return b64url(sig)}
+async function verifyData(pubKey,data,sig){return crypto.subtle.verify({name:'ECDSA',hash:'SHA-256'},pubKey,unb64(sig),new TextEncoder().encode(data))}
+
 async function compress(s){const c=new CompressionStream('deflate');const w=new Blob([s]).stream().pipeThrough(c);return b64url(new Uint8Array(await new Response(w).arrayBuffer()))}
 async function decompress(s){const d=new DecompressionStream('deflate');const w=new Blob([unb64(s)]).stream().pipeThrough(d);return new Response(w).text()}
 
+// ============== STATE ==============
+const STUN=[{urls:'stun:stun.l.google.com:19302'},{urls:'stun:stun1.l.google.com:19302'}];
+const $=id=>document.getElementById(id);
+
+const S={
+  pc:null,
+  dc:null,
+  roomKey:null,
+  roomId:null,
+  nick:null,
+  myId:crypto.randomUUID(),
+  myKeyPair:null,
+  myPubKey:null,
+  adminPubKey:null,
+  isAdmin:false,
+  peers:new Map(),
+  messages:[],
+  selectedMessages:new Set(),
+  files:new Map(),
+  msgTTL:4*60*60*1000,
+  maxPeers:10,
+  expiresAt:null
+};
+
+// ============== STORAGE ==============
+const Storage={
+  get(k){try{return JSON.parse(localStorage.getItem('ghost:'+k))}catch(e){return null}},
+  set(k,v){localStorage.setItem('ghost:'+k,JSON.stringify(v))},
+  del(k){localStorage.removeItem('ghost:'+k)},
+  clear(){for(let k of Object.keys(localStorage))if(k.startsWith('ghost:'))localStorage.removeItem(k)}
+};
+
+// ============== UI HELPERS ==============
 function showHome(){
+  const saved=Storage.get('session');
   $('app').innerHTML=`<div class="center"><div class="card">
     <div class="logo">👻</div>
     <h1>Ghost</h1>
-    <p class="subtitle">Private conversations.<br>No servers. No logs. Just you.</p>
-    <input id="nick-in" placeholder="Your name" maxlength="20" value="${localStorage.getItem('ghost-nick')||''}">
-    <button class="btn btn-primary" onclick="doCreate()">Start Conversation</button>
-    <button class="btn btn-secondary" onclick="showJoin()">Join Conversation</button>
+    <p class="subtitle">Private group chats.<br>No servers. No logs. Just encrypted.</p>
+    <input id="nick-in" placeholder="Your name" maxlength="20" value="${Storage.get('nick')||''}">
+    <button class="btn btn-primary" onclick="doCreate()">Create Room (Admin)</button>
+    <button class="btn btn-secondary" onclick="showJoin()">Join Room</button>
+    ${saved?`<button class="btn btn-secondary" onclick="restoreSession()">Rejoin Last Room</button>`:''}
   </div></div>`;
 }
 
 async function doCreate(){
   S.nick=$('nick-in').value.trim()||'Ghost'+rnd(2);
-  localStorage.setItem('ghost-nick',S.nick);
-  S.room=rnd(4);
-  S.key=await genKey();
-  const keyStr=await expKey(S.key);
+  Storage.set('nick',S.nick);
+  S.roomId=rnd(8);
+  S.roomKey=await genAESKey();
+  S.isAdmin=true;
+  S.myKeyPair=await genECDSAKey();
+  S.myPubKey=await expECDSAPub(S.myKeyPair.publicKey);
+  S.adminPubKey=S.myPubKey;
+  S.expiresAt=Date.now()+24*60*60*1000;
 
   const pc=new RTCPeerConnection({iceServers:STUN});
   const dc=pc.createDataChannel('chat',{ordered:true});
-  setupDC(dc);
+  setupDC(dc,true);
 
   const offer=await pc.createOffer();
   await pc.setLocalDescription(offer);
-  await new Promise(r=>{if(pc.iceGatheringState==='complete')r();else pc.onicegatheringstatechange=()=>{if(pc.iceGatheringState==='complete')r()};setTimeout(r,3000)});
+  await waitICE(pc);
 
-  const code='G:'+S.room+'.'+keyStr+'.'+await compress(pc.localDescription.sdp);
+  const roomKeyStr=await expAESKey(S.roomKey);
+  const code='G:'+S.roomId+'.'+roomKeyStr+'.'+S.myPubKey+'.'+await compress(pc.localDescription.sdp);
   S.pc=pc;
 
+  saveSession();
+
   $('app').innerHTML=`<div class="center"><div class="card">
-    <div class="logo">📋</div>
-    <h1>Share This</h1>
-    <p class="subtitle">Send this code to start the conversation.<br>Any way you like.</p>
+    <div class="logo admin">👑</div>
+    <h1>Admin Room Created</h1>
+    <p class="subtitle">Share this invite code.<br>Expires in 24 hours.</p>
     <div class="qr-wrap" id="qr"></div>
     <div class="code-box" id="code"></div>
     <button class="btn btn-primary" onclick="copyCode()">Copy Code</button>
-    <button class="btn btn-secondary" onclick="showAnswer()">I've Been Sent a Reply</button>
+    <button class="btn btn-secondary" onclick="showAnswer()">Enter Reply Code</button>
+    <button class="btn btn-secondary" onclick="showHome()">Back</button>
   </div></div>`;
 
   $('code').textContent=code;
-  if(code.length>200) $('code').textContent=code.slice(0,100)+'...'+code.slice(-50)+'\n('+code.length+' chars)';
+  window.currentCode=code;
   const qr=qrcode(0,'L');qr.addData(code);qr.make();
   $('qr').innerHTML=qr.createSvgTag({cellSize:3,margin:1});
-  window.currentCode=code;
 }
-
-function copyCode(){navigator.clipboard.writeText(window.currentCode);const btn=document.querySelector('.btn-primary');btn.textContent='Copied!';setTimeout(()=>btn.textContent='Copy Code',2000);}
 
 function showJoin(){
   S.nick=$('nick-in').value.trim()||'Ghost'+rnd(2);
-  localStorage.setItem('ghost-nick',S.nick);
+  Storage.set('nick',S.nick);
   $('app').innerHTML=`<div class="center"><div class="card">
     <div class="logo">🔑</div>
-    <h1>Enter Code</h1>
-    <p class="subtitle">Paste the code you received to join.</p>
-    <textarea id="code-in" rows="3" placeholder="G:..."></textarea>
+    <h1>Join Room</h1>
+    <p class="subtitle">Paste the invite code.</p>
+    <textarea id="code-in" rows="4" placeholder="G:..."></textarea>
     <button class="btn btn-primary" onclick="doJoin()">Connect</button>
     <button class="btn btn-secondary" onclick="showHome()">Back</button>
   </div></div>`;
@@ -381,11 +720,15 @@ async function doJoin(){
   const input=$('code-in').value.trim();
   if(!input.startsWith('G:')){alert('Invalid code');return}
   const parts=input.slice(2).split('.');
-  if(parts.length!==3){alert('Invalid code');return}
+  if(parts.length!==4){alert('Invalid code format');return}
 
-  S.room=parts[0];
-  S.key=await impKey(parts[1]);
-  const offerSDP=await decompress(parts[2]);
+  S.roomId=parts[0];
+  S.roomKey=await impAESKey(parts[1]);
+  S.adminPubKey=parts[2];
+  S.isAdmin=false;
+  S.myKeyPair=await genECDSAKey();
+  S.myPubKey=await expECDSAPub(S.myKeyPair.publicKey);
+  const offerSDP=await decompress(parts[3]);
 
   const pc=new RTCPeerConnection({iceServers:STUN});
   let dcResolve;
@@ -395,15 +738,17 @@ async function doJoin(){
   await pc.setRemoteDescription({type:'offer',sdp:offerSDP});
   const answer=await pc.createAnswer();
   await pc.setLocalDescription(answer);
-  await new Promise(r=>{if(pc.iceGatheringState==='complete')r();else pc.onicegatheringstatechange=()=>{if(pc.iceGatheringState==='complete')r()};setTimeout(r,3000)});
+  await waitICE(pc);
 
   S.pc=pc;
-  const answerCode='A:'+await compress(pc.localDescription.sdp);
+  const answerCode='A:'+S.myPubKey+'.'+await compress(pc.localDescription.sdp);
+
+  saveSession();
 
   $('app').innerHTML=`<div class="center"><div class="card">
     <div class="logo">✉️</div>
-    <h1>Send This Back</h1>
-    <p class="subtitle">They need this to complete the connection.</p>
+    <h1>Send Reply</h1>
+    <p class="subtitle">Give this back to the admin.</p>
     <div class="qr-wrap" id="qr"></div>
     <div class="code-box" id="code"></div>
     <button class="btn btn-primary" onclick="copyCode()">Copy Code</button>
@@ -415,75 +760,510 @@ async function doJoin(){
   $('qr').innerHTML=qr.createSvgTag({cellSize:3,margin:1});
 
   const dc=await dcPromise;
-  setupDC(dc);
+  setupDC(dc,false);
 }
 
 function showAnswer(){
   $('app').innerHTML=`<div class="center"><div class="card">
     <div class="logo">🔓</div>
     <h1>Enter Reply</h1>
-    <p class="subtitle">Paste the code they sent back.</p>
-    <textarea id="ans-in" rows="3" placeholder="A:..."></textarea>
-    <button class="btn btn-primary" onclick="acceptAnswer()">Unlock</button>
+    <p class="subtitle">Paste the answer code from peer.</p>
+    <textarea id="ans-in" rows="4" placeholder="A:..."></textarea>
+    <button class="btn btn-primary" onclick="acceptAnswer()">Connect</button>
   </div></div>`;
 }
 
 async function acceptAnswer(){
   const input=$('ans-in').value.trim();
   if(!input.startsWith('A:')){alert('Invalid code');return}
-  const answerSDP=await decompress(input.slice(2));
+  const parts=input.slice(2).split('.');
+  if(parts.length!==2){alert('Invalid code');return}
+
+  const peerPubKey=parts[0];
+  const answerSDP=await decompress(parts[1]);
   await S.pc.setRemoteDescription({type:'answer',sdp:answerSDP});
+
+  // Send admin pubkey to new peer
+  sendToPeer(peerPubKey,{type:'admin-pubkey',pubKey:S.adminPubKey,from:S.myId});
 }
 
-function setupDC(dc){
-  S.dc=dc;
-  dc.onopen=()=>showChat();
-  dc.onmessage=async e=>{
-    const msg=JSON.parse(await dec(S.key,e.data));
-    addMsg(msg.nick,msg.text,false);
+async function waitICE(pc){
+  return new Promise(r=>{
+    if(pc.iceGatheringState==='complete')r();
+    else pc.onicegatheringstatechange=()=>{if(pc.iceGatheringState==='complete')r()};
+    setTimeout(r,3000);
+  });
+}
+
+function copyCode(){navigator.clipboard.writeText(window.currentCode);const btn=document.querySelector('.btn-primary');btn.textContent='Copied!';setTimeout(()=>btn.textContent='Copy Code',2000);}
+
+// ============== CHAT UI ==============
+function showChat(){
+  $('app').innerHTML=`<div id="chat-container">
+    <div id="chat-header">
+      <h2>👻 Ghost <span class="badge${S.isAdmin?' admin':''}">${S.isAdmin?'Admin':'Member'}</span></h2>
+      <div id="header-actions">
+        <button class="btn btn-small btn-secondary" onclick="toggleSettings()">⚙️</button>
+        <button class="btn btn-small btn-danger" onclick="leaveRoom()">Leave</button>
+      </div>
+    </div>
+    <div id="messages"></div>
+    <div id="input-area">
+      <div id="selection-bar">
+        <span id="selection-info">0 selected</span>
+        <div id="selection-actions">
+          <button class="btn btn-small btn-secondary" onclick="copySelected()">Copy</button>
+          <button class="btn btn-small btn-secondary" onclick="downloadSelected()">Download</button>
+          <button class="btn btn-small" onclick="clearSelection()">Cancel</button>
+        </div>
+      </div>
+      <div id="input-row">
+        <button id="file-btn" onclick="selectFile()" title="Send file">📎</button>
+        <input type="file" id="file-input" style="display:none" onchange="handleFileSelect(event)">
+        <input id="msg-input" placeholder="Type a message..." autocomplete="off">
+        <button class="btn btn-primary" id="send-btn" onclick="sendMsg()">Send</button>
+      </div>
+    </div>
+  </div>`;
+
+  const input=$('msg-input');
+  input.onkeypress=e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendMsg()}};
+  input.focus();
+
+  setupDragDrop();
+  loadStoredMessages();
+  addMsg('Ghost','Connected. Messages expire after 4 hours.',false,'system');
+}
+
+function setupDragDrop(){
+  const msgs=$('messages');
+  const overlay=$('drop-overlay');
+
+  document.body.ondragover=e=>{e.preventDefault();overlay.classList.add('active')};
+  document.body.ondragleave=e=>{if(e.target===overlay)overlay.classList.remove('active')};
+  document.body.ondrop=e=>{
+    e.preventDefault();
+    overlay.classList.remove('active');
+    if(e.dataTransfer.files.length)handleFiles(e.dataTransfer.files);
+  };
+
+  msgs.onclick=e=>{
+    const msgEl=e.target.closest('.message');
+    if(!msgEl)return;
+    if(e.ctrlKey||e.metaKey||e.shiftKey){
+      e.preventDefault();
+      toggleMessageSelect(msgEl);
+    }
   };
 }
 
-function showChat(){
-  $('app').innerHTML=`<div id="chat-container">
-    <div id="messages"></div>
-    <div id="input-area">
-      <input id="msg-input" placeholder="Type a message..." autocomplete="off">
-      <button class="btn btn-primary" id="send-btn" onclick="sendMsg()">Send</button>
-    </div>
-  </div>`;
-  const input=$('msg-input');
-  input.onkeypress=e=>{if(e.key==='Enter')sendMsg()};
-  input.focus();
-  addMsg('Ghost','Connected. This conversation is private and ephemeral.',false);
+function setupDC(dc,isAdmin){
+  S.dc=dc;
+  dc.onopen=()=>showChat();
+  dc.onmessage=async e=>{
+    try{
+      const payload=JSON.parse(await aesDec(S.roomKey,e.data));
+      await handleMessage(payload);
+    }catch(err){console.error('Decryption failed:',err)}
+  };
+  dc.onclose=()=>{addMsg('Ghost','Disconnected',false,'system');};
+}
+
+async function handleMessage(payload){
+  // Verify signature
+  if(payload.sig&&payload.fromPubKey){
+    const pubKey=await impECDSAPub(payload.fromPubKey);
+    const dataStr=JSON.stringify(payload.data);
+    const valid=await verifyData(pubKey,dataStr,payload.sig);
+    if(!valid){console.error('Invalid signature');return}
+  }
+
+  const msg=payload.data;
+
+  switch(msg.type){
+    case 'chat':
+      addMsg(msg.nick,msg.text,false,msg.from,S.isAdmin&&msg.fromPubKey===S.adminPubKey,msg.ts);
+      storeMessage(msg);
+      break;
+    case 'file':
+      handleFileMessage(msg);
+      break;
+    case 'admin-pubkey':
+      if(!S.isAdmin)S.adminPubKey=msg.pubKey;
+      break;
+    case 'admin-action':
+      await handleAdminAction(msg);
+      break;
+    case 'self-destruct':
+      handleSelfDestruct();
+      break;
+  }
 }
 
 async function sendMsg(){
   const input=$('msg-input');
-  const btn=$('send-btn');
   const text=input.value.trim();
   if(!text)return;
-  if(!S.dc||S.dc.readyState!=='open'){alert('Not connected');return;}
+  if(!S.dc||S.dc.readyState!=='open'){alert('Not connected');return}
+
   input.value='';
-  btn.disabled=true;
-  try{
-    const msg={nick:S.nick,text,time:Date.now()};
-    S.dc.send(await enc(S.key,JSON.stringify(msg)));
-    addMsg(S.nick,text,true);
-  }catch(e){console.error(e);}
-  finally{btn.disabled=false;input.focus();}
+  const msg={
+    type:'chat',
+    from:S.myId,
+    nick:S.nick,
+    text,
+    ts:Date.now()
+  };
+
+  const payload=await signPayload(msg);
+  S.dc.send(await aesEnc(S.roomKey,JSON.stringify(payload)));
+  addMsg(S.nick,text,true,S.myId,false,msg.ts);
+  storeMessage({...msg,self:true});
 }
 
-function addMsg(nick,text,self){
+async function signPayload(data){
+  const dataStr=JSON.stringify(data);
+  const sig=await signData(S.myKeyPair.privateKey,dataStr);
+  return{data,sig,fromPubKey:S.myPubKey};
+}
+
+function addMsg(nick,text,self,fromId,isAdminMsg,ts){
   const div=document.createElement('div');
   div.className='message '+(self?'sent':'received');
-  div.innerHTML=`<div class="nick">${nick}</div><div>${text}</div>`;
-  const msgs=document.getElementById('messages');
+  div.dataset.msgId=ts||Date.now();
+  div.dataset.from=fromId||'unknown';
+
+  const timeStr=ts?new Date(ts).toLocaleTimeString():new Date().toLocaleTimeString();
+  const adminBadge=isAdminMsg?'<span style="color:var(--warning)">👑</span> ':'';
+
+  div.innerHTML=`<div class="nick">${adminBadge}${nick}</div><div>${escapeHtml(text)}</div><div class="meta">${timeStr}</div>`;
+
+  const msgs=$('messages');
   if(!msgs)return;
   msgs.appendChild(div);
   msgs.scrollTop=msgs.scrollHeight;
 }
 
+// ============== FILES ==============
+function selectFile(){$('file-input').click()}
+
+async function handleFileSelect(e){
+  if(e.target.files.length)await handleFiles(e.target.files);
+}
+
+async function handleFiles(files){
+  for(const file of files){
+    const reader=new FileReader();
+    reader.onload=async e=>{
+      const data=e.target.result;
+      const hash=await hashData(data);
+      const fileId=rnd(16);
+
+      const msg={
+        type:'file',
+        from:S.myId,
+        nick:S.nick,
+        fileId,
+        name:file.name,
+        size:file.size,
+        mime:file.type,
+        hash,
+        ts:Date.now()
+      };
+
+      S.files.set(fileId,{name:file.name,data,mime:file.type});
+
+      const payload=await signPayload(msg);
+      S.dc.send(await aesEnc(S.roomKey,JSON.stringify(payload)));
+
+      addFileMessage(S.nick,file.name,file.size,true,fileId);
+    };
+    reader.readAsDataURL(file);
+  }
+}
+
+function addFileMessage(nick,name,size,self,fileId){
+  const div=document.createElement('div');
+  div.className='message '+(self?'sent':'received');
+  div.dataset.fileId=fileId;
+
+  const sizeStr=formatBytes(size);
+
+  div.innerHTML=`<div class="nick">${nick}</div>
+    <div class="file-attachment" onclick="downloadFile('${fileId}')">
+      <span>📄</span>
+      <div>
+        <div>${escapeHtml(name)}</div>
+        <div style="font-size:12px;opacity:0.7">${sizeStr}</div>
+      </div>
+    </div>`;
+
+  const msgs=$('messages');
+  if(!msgs)return;
+  msgs.appendChild(div);
+  msgs.scrollTop=msgs.scrollHeight;
+}
+
+function handleFileMessage(msg){
+  addFileMessage(msg.nick,msg.name,msg.size,false,msg.fileId);
+  // Store file metadata, actual data comes via data channel chunks or webrtc data
+  // For now, simple approach: files are sent inline via data URL in follow-up message
+}
+
+function downloadFile(fileId){
+  const file=S.files.get(fileId);
+  if(!file)return alert('File not available');
+
+  const a=document.createElement('a');
+  a.href=file.data;
+  a.download=file.name;
+  a.click();
+}
+
+async function hashData(data){
+  const buf=await fetch(data).then(r=>r.arrayBuffer());
+  const hash=await crypto.subtle.digest('SHA-256',buf);
+  return b64url(hash);
+}
+
+function formatBytes(b){
+  if(b<1024)return b+' B';
+  if(b<1024*1024)return(b/1024).toFixed(1)+' KB';
+  return(b/(1024*1024)).toFixed(1)+' MB';
+}
+
+// ============== SELECTION ==============
+function toggleMessageSelect(el){
+  const id=el.dataset.msgId;
+  if(S.selectedMessages.has(id)){
+    S.selectedMessages.delete(id);
+    el.classList.remove('selected');
+  }else{
+    S.selectedMessages.add(id);
+    el.classList.add('selected');
+  }
+  updateSelectionBar();
+}
+
+function updateSelectionBar(){
+  const bar=$('selection-bar');
+  const info=$('selection-info');
+  if(S.selectedMessages.size>0){
+    bar.classList.add('active');
+    info.textContent=`${S.selectedMessages.size} selected`;
+  }else{
+    bar.classList.remove('active');
+  }
+}
+
+function clearSelection(){
+  S.selectedMessages.clear();
+  document.querySelectorAll('.message.selected').forEach(el=>el.classList.remove('selected'));
+  updateSelectionBar();
+}
+
+function copySelected(){
+  const texts=[];
+  document.querySelectorAll('.message').forEach(el=>{
+    if(S.selectedMessages.has(el.dataset.msgId)){
+      const nick=el.querySelector('.nick').textContent;
+      const text=el.querySelector('div:nth-child(2)').textContent;
+      texts.push(`${nick}: ${text}`);
+    }
+  });
+  navigator.clipboard.writeText(texts.join('\n'));
+  clearSelection();
+}
+
+function downloadSelected(){
+  // Download files from selected messages
+  document.querySelectorAll('.message').forEach(el=>{
+    if(S.selectedMessages.has(el.dataset.msgId)&&el.dataset.fileId){
+      downloadFile(el.dataset.fileId);
+    }
+  });
+  clearSelection();
+}
+
+// ============== ADMIN ACTIONS ==============
+async function handleAdminAction(msg){
+  // Verify admin signature
+  const adminKey=await impECDSAPub(S.adminPubKey);
+  const valid=await verifyData(adminKey,JSON.stringify(msg.action),msg.sig);
+  if(!valid){console.error('Invalid admin signature');return}
+
+  switch(msg.action.type){
+    case 'kick':
+      if(msg.action.target===S.myId){
+        alert('You have been removed by admin');
+        leaveRoom();
+      }
+      break;
+    case 'self-destruct':
+      handleSelfDestruct();
+      break;
+  }
+}
+
+async function sendAdminAction(action){
+  if(!S.isAdmin){alert('Only admin can do this');return}
+  const sig=await signData(S.myKeyPair.privateKey,JSON.stringify(action));
+  const msg={type:'admin-action',action,sig};
+  S.dc.send(await aesEnc(S.roomKey,JSON.stringify(msg)));
+}
+
+function handleSelfDestruct(){
+  Storage.clear();
+  S.messages=[];
+  S.files.clear();
+  document.getElementById('messages').innerHTML='';
+  addMsg('Ghost','Room destroyed by admin. All messages deleted.',false,'system');
+  setTimeout(()=>{alert('Room destroyed');leaveRoom()},2000);
+}
+
+// ============== SETTINGS ==============
+function toggleSettings(){
+  const panel=$('settings-panel');
+  const content=$('settings-content');
+
+  if(panel.classList.contains('open')){
+    panel.classList.remove('open');
+    return;
+  }
+
+  panel.classList.add('open');
+
+  let html=`<div class="section">
+    <h4>Room Info</h4>
+    <div class="setting-row"><label>Room ID</label><span style="font-family:monospace;font-size:12px">${S.roomId}</span></div>
+    <div class="setting-row"><label>Your Role</label><span>${S.isAdmin?'Admin':'Member'}</span></div>
+    <div class="setting-row"><label>Peers</label><span>${S.peers.size+1}</span></div>
+  </div>`;
+
+  if(S.isAdmin){
+    html+=`<div class="section">
+      <h4>Admin Actions</h4>
+      <button class="btn btn-danger" onclick="confirmSelfDestruct()">Destroy Room</button>
+      <button class="btn btn-secondary" style="margin-top:8px" onclick="showInviteCode()">Show Invite Code</button>
+    </div>`;
+  }
+
+  html+=`<div class="section">
+    <h4>Settings</h4>
+    <div class="setting-row">
+      <label>Message TTL (4h default)</label>
+      <div class="toggle" id="ttl-toggle" onclick="toggleTTL()"></div>
+    </div>
+    <button class="btn btn-secondary" style="margin-top:16px" onclick="exportMessages()">Export Messages</button>
+  </div>`;
+
+  content.innerHTML=html;
+}
+
+function confirmSelfDestruct(){
+  if(!confirm('Destroy room and delete all messages for everyone?'))return;
+  sendAdminAction({type:'self-destruct',ts:Date.now()});
+  handleSelfDestruct();
+}
+
+function showInviteCode(){
+  // Regenerate invite code
+  alert('Invite code:\n'+window.currentCode);
+}
+
+function toggleTTL(){
+  const t=$('ttl-toggle');
+  t.classList.toggle('active');
+}
+
+function exportMessages(){
+  const data=Storage.get('messages_'+S.roomId)||[];
+  const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url;
+  a.download=`ghost-${S.roomId}-${Date.now()}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+// ============== STORAGE ==============
+function saveSession(){
+  Storage.set('session',{
+    roomId:S.roomId,
+    roomKey:expAESKey(S.roomKey),
+    myId:S.myId,
+    myPubKey:S.myPubKey,
+    adminPubKey:S.adminPubKey,
+    isAdmin:S.isAdmin,
+    nick:S.nick,
+    expiresAt:S.expiresAt
+  });
+}
+
+async function restoreSession(){
+  const sess=Storage.get('session');
+  if(!sess){alert('No saved session');return}
+  if(sess.expiresAt&&Date.now()>sess.expiresAt){Storage.del('session');alert('Session expired');return}
+
+  S.roomId=sess.roomId;
+  S.roomKey=await impAESKey(sess.roomKey);
+  S.myId=sess.myId;
+  S.myPubKey=sess.myPubKey;
+  S.adminPubKey=sess.adminPubKey;
+  S.isAdmin=sess.isAdmin;
+  S.nick=sess.nick;
+
+  // Need to re-establish connection
+  showHome();
+  alert('Session restored. Use Join to reconnect with a new answer code.');
+}
+
+function storeMessage(msg){
+  const key='messages_'+S.roomId;
+  const msgs=Storage.get(key)||[];
+  msgs.push({...msg,ts:msg.ts||Date.now()});
+  // Clean old messages
+  const cutoff=Date.now()-S.msgTTL;
+  const filtered=msgs.filter(m=>m.ts>cutoff);
+  Storage.set(key,filtered);
+}
+
+function loadStoredMessages(){
+  const key='messages_'+S.roomId;
+  const msgs=Storage.get(key)||[];
+  const cutoff=Date.now()-S.msgTTL;
+  for(const m of msgs){
+    if(m.ts>cutoff){
+      addMsg(m.nick,m.text,m.self,m.from,false,m.ts);
+    }
+  }
+}
+
+function leaveRoom(){
+  if(S.dc)S.dc.close();
+  if(S.pc)S.pc.close();
+  S.dc=null;
+  S.pc=null;
+  Storage.del('session');
+  showHome();
+}
+
+// ============== UTILS ==============
+function escapeHtml(t){
+  const d=document.createElement('div');
+  d.textContent=t;
+  return d.innerHTML;
+}
+
+function sendToPeer(pubKey,msg){
+  // In mesh, broadcast to all, they filter by pubkey
+  if(S.dc&&S.dc.readyState==='open'){
+    S.dc.send(JSON.stringify({...msg,to:pubKey}));
+  }
+}
+
+// ============== INIT ==============
 showHome();
 </script>
 </body>
