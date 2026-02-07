@@ -5,33 +5,294 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Ghost</title>
 <style>
-:root{--bg:#0a0f0a;--s:#0d1a0d;--b:#1a331a;--t:#e0f0e0;--dim:#7a9a7a;--acc:#4ade80;--grn:#22c55e;--red:#ef4444;--font:system-ui,-apple-system,sans-serif}
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap');
+
+:root{
+  --bg:#0b0d14;
+  --surface:#151821;
+  --surface-hover:#1e212b;
+  --border:#2a2e3a;
+  --text:#e8eaf0;
+  --text-secondary:#8b92a8;
+  --accent:#60a5fa;
+  --accent-hover:#3b82f6;
+  --success:#34d399;
+  --font:'Inter',system-ui,sans-serif
+}
+
 *{margin:0;padding:0;box-sizing:border-box}
-html,body{height:100vh;overflow:hidden}
-body{background:var(--bg);color:var(--t);font-family:var(--font);font-size:14px;position:relative}
-body::before{content:'';position:fixed;top:0;left:0;right:0;bottom:0;background:radial-gradient(1px 1px at 20px 30px,#4ade80,transparent),radial-gradient(1px 1px at 50px 160px,#4ade80,transparent),radial-gradient(2px 2px at 200px 50px,#22c55e,transparent),radial-gradient(1px 1px at 400px 30px,#4ade80,transparent);background-size:500px 200px;opacity:0.4;pointer-events:none;z-index:-1}
-.center{display:flex;justify-content:center;align-items:center;height:100vh;padding:20px}
-.box{background:var(--s);border:1px solid var(--b);border-radius:12px;padding:32px;max-width:400px;width:100%;text-align:center}
-h1{font-size:28px;margin-bottom:8px;color:#fff}
-p{color:var(--dim);margin-bottom:24px;font-size:13px}
-input,textarea{background:var(--bg);color:var(--t);border:1px solid var(--b);padding:12px 16px;font-size:14px;border-radius:8px;width:100%;outline:none;margin:8px 0}
-input:focus,textarea:focus{border-color:var(--acc)}
-button{background:var(--acc);color:#000;border:none;padding:12px 24px;font-size:14px;font-weight:600;border-radius:8px;cursor:pointer;width:100%;margin-top:16px}
-button:hover{background:#22c55e}
-button.secondary{background:transparent;color:var(--t);border:1px solid var(--b)}
-button.secondary:hover{border-color:var(--acc)}
-.code-box{background:var(--bg);border:1px solid var(--b);border-radius:8px;padding:16px;font-family:monospace;font-size:12px;word-break:break-all;margin:16px 0}
-.qr-wrap{background:#fff;border-radius:8px;padding:16px;display:inline-block;margin:16px 0}
-#messages{position:fixed;top:0;left:0;right:0;bottom:70px;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:8px}
-#input-area{position:fixed;bottom:0;left:0;right:0;padding:12px 16px;background:var(--s);border-top:1px solid var(--b);display:flex;gap:10px;align-items:center}
-#msg-input{flex:1;margin:0;background:var(--bg);border:1px solid var(--b);color:var(--t);padding:10px 14px;border-radius:20px;outline:none}
-#msg-input:focus{border-color:var(--acc)}
-#send-btn{width:auto;padding:10px 20px;margin:0;border-radius:20px}
-.msg{padding:10px 14px;background:var(--s);border-radius:16px;border:1px solid var(--b);max-width:75%;word-break:break-word;align-self:flex-start}
-.msg.self{align-self:flex-end;background:var(--acc);color:#000;border-color:var(--acc)}
-.msg.self .nick{color:rgba(0,0,0,0.6)}
-.msg .nick{font-size:11px;color:var(--dim);margin-bottom:2px;font-weight:600}
-.msg .text{font-size:14px;line-height:1.4}
+
+html,body{
+  height:100vh;
+  overflow:hidden;
+  font-family:var(--font);
+  background:var(--bg);
+  color:var(--text)
+}
+
+/* Animated space background */
+body::before{
+  content:'';
+  position:fixed;
+  inset:0;
+  background:
+    radial-gradient(ellipse at 20% 80%,rgba(96,165,250,0.15) 0%,transparent 50%),
+    radial-gradient(ellipse at 80% 20%,rgba(52,211,153,0.1) 0%,transparent 50%),
+    radial-gradient(ellipse at 40% 40%,rgba(139,92,246,0.08) 0%,transparent 40%);
+  z-index:-2
+}
+
+/* Stars */
+body::after{
+  content:'';
+  position:fixed;
+  inset:0;
+  background-image:
+    radial-gradient(1px 1px at 10% 10%,rgba(255,255,255,0.8),transparent),
+    radial-gradient(1px 1px at 20% 80%,rgba(255,255,255,0.6),transparent),
+    radial-gradient(1px 1px at 50% 50%,rgba(255,255,255,0.7),transparent),
+    radial-gradient(1px 1px at 70% 30%,rgba(255,255,255,0.5),transparent),
+    radial-gradient(1.5px 1.5px at 90% 70%,rgba(255,255,255,0.9),transparent),
+    radial-gradient(1px 1px at 30% 60%,rgba(255,255,255,0.4),transparent),
+    radial-gradient(1px 1px at 60% 90%,rgba(255,255,255,0.6),transparent),
+    radial-gradient(1px 1px at 80% 15%,rgba(255,255,255,0.5),transparent);
+  background-size:200px 200px;
+  animation:twinkle 8s ease-in-out infinite;
+  z-index:-1
+}
+
+@keyframes twinkle{
+  0%,100%{opacity:0.5}
+  50%{opacity:1}
+}
+
+/* Layout */
+.center{
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  min-height:100vh;
+  padding:24px
+}
+
+.card{
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:20px;
+  padding:48px;
+  max-width:420px;
+  width:100%;
+  text-align:center;
+  box-shadow:0 25px 50px -12px rgba(0,0,0,0.5),0 0 0 1px rgba(255,255,255,0.05)
+}
+
+.logo{
+  width:56px;
+  height:56px;
+  background:linear-gradient(135deg,var(--accent),var(--success));
+  border-radius:16px;
+  margin:0 auto 24px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:28px;
+  box-shadow:0 8px 32px rgba(96,165,250,0.3)
+}
+
+h1{
+  font-size:32px;
+  font-weight:600;
+  margin-bottom:8px;
+  letter-spacing:-0.5px
+}
+
+.subtitle{
+  color:var(--text-secondary);
+  font-size:15px;
+  margin-bottom:32px;
+  line-height:1.5
+}
+
+/* Inputs */
+input,textarea{
+  width:100%;
+  background:var(--bg);
+  border:1px solid var(--border);
+  border-radius:12px;
+  padding:14px 16px;
+  color:var(--text);
+  font-size:15px;
+  font-family:inherit;
+  outline:none;
+  transition:all 0.2s;
+  margin:8px 0
+}
+
+input:focus,textarea:focus{
+  border-color:var(--accent);
+  box-shadow:0 0 0 3px rgba(96,165,250,0.1)
+}
+
+input::placeholder,textarea::placeholder{
+  color:var(--text-secondary)
+}
+
+/* Buttons */
+.btn{
+  width:100%;
+  padding:14px 24px;
+  border-radius:12px;
+  border:none;
+  font-size:15px;
+  font-weight:500;
+  font-family:inherit;
+  cursor:pointer;
+  transition:all 0.2s;
+  margin-top:12px
+}
+
+.btn-primary{
+  background:var(--accent);
+  color:#0b0d14
+}
+
+.btn-primary:hover{
+  background:var(--accent-hover);
+  transform:translateY(-1px);
+  box-shadow:0 8px 24px rgba(96,165,250,0.35)
+}
+
+.btn-secondary{
+  background:transparent;
+  color:var(--text);
+  border:1px solid var(--border)
+}
+
+.btn-secondary:hover{
+  background:var(--surface-hover);
+  border-color:var(--text-secondary)
+}
+
+/* Code display */
+.code-box{
+  background:var(--bg);
+  border:1px solid var(--border);
+  border-radius:12px;
+  padding:16px;
+  font-family:'SF Mono',monospace;
+  font-size:12px;
+  word-break:break-all;
+  margin:16px 0;
+  color:var(--text-secondary);
+  max-height:120px;
+  overflow-y:auto
+}
+
+.qr-wrap{
+  background:#fff;
+  border-radius:16px;
+  padding:20px;
+  display:inline-block;
+  margin:16px 0;
+  box-shadow:0 8px 32px rgba(0,0,0,0.3)
+}
+
+.status{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:8px;
+  color:var(--text-secondary);
+  font-size:13px;
+  margin-top:16px
+}
+
+.dot{
+  width:8px;
+  height:8px;
+  border-radius:50%;
+  background:var(--success);
+  animation:pulse 2s infinite
+}
+
+@keyframes pulse{
+  0%,100%{opacity:1}
+  50%{opacity:0.5}
+}
+
+/* Chat UI */
+#chat-container{
+  position:fixed;
+  inset:0;
+  display:flex;
+  flex-direction:column
+}
+
+#messages{
+  flex:1;
+  overflow-y:auto;
+  padding:24px;
+  display:flex;
+  flex-direction:column;
+  gap:12px
+}
+
+.message{
+  max-width:75%;
+  padding:12px 16px;
+  border-radius:18px;
+  font-size:15px;
+  line-height:1.4;
+  animation:slideIn 0.3s ease
+}
+
+@keyframes slideIn{
+  from{opacity:0;transform:translateY(10px)}
+  to{opacity:1;transform:translateY(0)}
+}
+
+.message.received{
+  align-self:flex-start;
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-bottom-left-radius:4px
+}
+
+.message.sent{
+  align-self:flex-end;
+  background:var(--accent);
+  color:#0b0d14;
+  border-bottom-right-radius:4px
+}
+
+.message .nick{
+  font-size:11px;
+  font-weight:600;
+  text-transform:uppercase;
+  letter-spacing:0.5px;
+  margin-bottom:4px;
+  opacity:0.7
+}
+
+#input-area{
+  padding:20px 24px;
+  background:var(--surface);
+  border-top:1px solid var(--border);
+  display:flex;
+  gap:12px
+}
+
+#msg-input{
+  flex:1;
+  margin:0
+}
+
+#send-btn{
+  width:auto;
+  margin:0;
+  padding:14px 28px
+}
+
 .hidden{display:none}
 </style>
 </head>
@@ -40,9 +301,6 @@ button.secondary:hover{border-color:var(--acc)}
 <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js"></script>
 <script>
 const STUN=[{urls:'stun:stun.l.google.com:19302'},{urls:'stun:stun1.l.google.com:19302'}];
-// Optional signaling for automatic answer relay
-const SIGNAL_SERVER='wss://signal.notruefireman.org:8443';
-let ws=null;
 const S={pc:null,dc:null,key:null,room:null,nick:null,myId:crypto.randomUUID()};
 const $=id=>document.getElementById(id);
 const rnd=(n=4)=>[...crypto.getRandomValues(new Uint8Array(n))].map(b=>b.toString(16).padStart(2,'0')).join('');
@@ -54,17 +312,17 @@ async function expKey(k){return b64url(await crypto.subtle.exportKey('raw',k))}
 async function impKey(s){return crypto.subtle.importKey('raw',unb64(s),{name:'AES-GCM'},true,['encrypt','decrypt'])}
 async function enc(k,txt){const iv=crypto.getRandomValues(new Uint8Array(12));const ct=new Uint8Array(await crypto.subtle.encrypt({name:'AES-GCM',iv},k,new TextEncoder().encode(txt)));const r=new Uint8Array(12+ct.length);r.set(iv);r.set(ct,12);return b64url(r)}
 async function dec(k,data){const buf=unb64(data),iv=buf.slice(0,12),ct=buf.slice(12);return new TextDecoder().decode(await crypto.subtle.decrypt({name:'AES-GCM',iv},k,ct))}
-
 async function compress(s){const c=new CompressionStream('deflate');const w=new Blob([s]).stream().pipeThrough(c);return b64url(new Uint8Array(await new Response(w).arrayBuffer()))}
 async function decompress(s){const d=new DecompressionStream('deflate');const w=new Blob([unb64(s)]).stream().pipeThrough(d);return new Response(w).text()}
 
 function showHome(){
-  $('app').innerHTML=`<div class="center"><div class="box">
+  $('app').innerHTML=`<div class="center"><div class="card">
+    <div class="logo">👻</div>
     <h1>Ghost</h1>
-    <p>Temporary private chat. No logs. No servers.</p>
+    <p class="subtitle">Private conversations.<br>No servers. No logs. Just you.</p>
     <input id="nick-in" placeholder="Your name" maxlength="20" value="${localStorage.getItem('ghost-nick')||''}">
-    <button onclick="doCreate()">Create Room</button>
-    <button class="secondary" onclick="showJoin()">Join Room</button>
+    <button class="btn btn-primary" onclick="doCreate()">Start Conversation</button>
+    <button class="btn btn-secondary" onclick="showJoin()">Join Conversation</button>
   </div></div>`;
 }
 
@@ -86,45 +344,35 @@ async function doCreate(){
   const code='G:'+S.room+'.'+keyStr+'.'+await compress(pc.localDescription.sdp);
   S.pc=pc;
 
-  // Try to listen for answer via signaling
-  trySignalListen(S.room);
-
-  $('app').innerHTML=`<div class="center"><div class="box">
-    <h1>Share This Code</h1>
-    <p>Send to the other person any way you want.</p>
-    <div id="signal-status" style="color:var(--dim);font-size:12px;margin-bottom:8px">Checking signal server...</div>
+  $('app').innerHTML=`<div class="center"><div class="card">
+    <div class="logo">📋</div>
+    <h1>Share This</h1>
+    <p class="subtitle">Send this code to start the conversation.<br>Any way you like.</p>
     <div class="qr-wrap" id="qr"></div>
     <div class="code-box" id="code"></div>
-    <button onclick="copyCode()">Copy</button>
-    <button class="secondary" onclick="showAnswer()">I've Been Sent a Code</button>
+    <button class="btn btn-primary" onclick="copyCode()">Copy Code</button>
+    <button class="btn btn-secondary" onclick="showAnswer()">I've Been Sent a Reply</button>
   </div></div>`;
 
   $('code').textContent=code;
-  if(code.length>200){
-    $('code').textContent=code.slice(0,100)+'...'+code.slice(-50)+'\n('+code.length+' chars - use copy button)';
-  }
+  if(code.length>200) $('code').textContent=code.slice(0,100)+'...'+code.slice(-50)+'\n('+code.length+' chars)';
   const qr=qrcode(0,'L');qr.addData(code);qr.make();
-  $('qr').innerHTML=qr.createSvgTag({cellSize:2,margin:1});
+  $('qr').innerHTML=qr.createSvgTag({cellSize:3,margin:1});
   window.currentCode=code;
-
-  // Update signal status after check
-  setTimeout(()=>{
-    const ss=$('signal-status');
-    if(ss)ss.textContent=ws?.readyState===1?'Signal server active (auto-connect enabled)':'Signal blocked (manual code required)';
-  },2000);
 }
 
-function copyCode(){navigator.clipboard.writeText(window.currentCode);}
+function copyCode(){navigator.clipboard.writeText(window.currentCode);const btn=document.querySelector('.btn-primary');btn.textContent='Copied!';setTimeout(()=>btn.textContent='Copy Code',2000);}
 
 function showJoin(){
   S.nick=$('nick-in').value.trim()||'Ghost'+rnd(2);
   localStorage.setItem('ghost-nick',S.nick);
-  $('app').innerHTML=`<div class="center"><div class="box">
+  $('app').innerHTML=`<div class="center"><div class="card">
+    <div class="logo">🔑</div>
     <h1>Enter Code</h1>
-    <p>Paste the code they sent you.</p>
+    <p class="subtitle">Paste the code you received to join.</p>
     <textarea id="code-in" rows="3" placeholder="G:..."></textarea>
-    <button onclick="doJoin()">Connect</button>
-    <button class="secondary" onclick="showHome()">Back</button>
+    <button class="btn btn-primary" onclick="doJoin()">Connect</button>
+    <button class="btn btn-secondary" onclick="showHome()">Back</button>
   </div></div>`;
   $('code-in').focus();
 }
@@ -152,67 +400,31 @@ async function doJoin(){
   S.pc=pc;
   const answerCode='A:'+await compress(pc.localDescription.sdp);
 
-  // Try signaling first, fallback to manual QR
-  const signalSuccess=await trySignalAnswer(S.room,answerCode);
+  $('app').innerHTML=`<div class="center"><div class="card">
+    <div class="logo">✉️</div>
+    <h1>Send This Back</h1>
+    <p class="subtitle">They need this to complete the connection.</p>
+    <div class="qr-wrap" id="qr"></div>
+    <div class="code-box" id="code"></div>
+    <button class="btn btn-primary" onclick="copyCode()">Copy Code</button>
+  </div></div>`;
 
-  if(signalSuccess){
-    $('app').innerHTML=`<div class="center"><div class="box">
-      <h1>Connecting...</h1>
-      <p>Signal server relaying answer. One moment...</p>
-      <div class="status"><span class="dot"></span> waiting for host</div>
-    </div></div>`;
-  }else{
-    $('app').innerHTML=`<div class="center"><div class="box">
-      <h1>Show This Back</h1>
-      <p>Signal blocked. Show them this code manually.</p>
-      <div class="qr-wrap" id="qr"></div>
-      <div class="code-box" id="code"></div>
-      <button onclick="copyCode()">Copy</button>
-    </div></div>`;
-
-    $('code').textContent=answerCode;
-    window.currentCode=answerCode;
-    const qr=qrcode(0,'L');qr.addData(answerCode);qr.make();
-    $('qr').innerHTML=qr.createSvgTag({cellSize:2,margin:1});
-  }
+  $('code').textContent=answerCode;
+  window.currentCode=answerCode;
+  const qr=qrcode(0,'L');qr.addData(answerCode);qr.make();
+  $('qr').innerHTML=qr.createSvgTag({cellSize:3,margin:1});
 
   const dc=await dcPromise;
   setupDC(dc);
 }
 
-async function trySignalAnswer(room,answerCode){
-  return new Promise(resolve=>{
-    try{
-      ws=new WebSocket(`${SIGNAL_SERVER}?room=${room}&role=answer`);
-      ws.onopen=()=>{
-        ws.send(JSON.stringify({type:'answer',sdp:answerCode.slice(2)}));
-        resolve(true);
-      };
-      ws.onerror=()=>resolve(false);
-      ws.onclose=()=>resolve(false);
-      setTimeout(()=>resolve(false),3000);
-    }catch(e){resolve(false);}
-  });
-}
-
-async function trySignalListen(room,onAnswer){
-  try{
-    ws=new WebSocket(`${SIGNAL_SERVER}?room=${room}&role=offer`);
-    ws.onmessage=async(e)=>{
-      const msg=JSON.parse(e.data);
-      if(msg.type==='answer'){
-        await S.pc.setRemoteDescription({type:'answer',sdp:await decompress(msg.sdp)});
-      }
-    };
-  }catch(e){/*ignore, use manual*/}
-}
-
 function showAnswer(){
-  $('app').innerHTML=`<div class="center"><div class="box">
-    <h1>Enter Their Response</h1>
-    <p>Paste the code they sent back.</p>
+  $('app').innerHTML=`<div class="center"><div class="card">
+    <div class="logo">🔓</div>
+    <h1>Enter Reply</h1>
+    <p class="subtitle">Paste the code they sent back.</p>
     <textarea id="ans-in" rows="3" placeholder="A:..."></textarea>
-    <button onclick="acceptAnswer()">Connect</button>
+    <button class="btn btn-primary" onclick="acceptAnswer()">Unlock</button>
   </div></div>`;
 }
 
@@ -233,15 +445,17 @@ function setupDC(dc){
 }
 
 function showChat(){
-  $('app').innerHTML=`<div id="messages"></div>
-  <div id="input-area">
-    <input id="msg-input" placeholder="Type a message..." autocomplete="off">
-    <button id="send-btn" onclick="sendMsg()">Send</button>
+  $('app').innerHTML=`<div id="chat-container">
+    <div id="messages"></div>
+    <div id="input-area">
+      <input id="msg-input" placeholder="Type a message..." autocomplete="off">
+      <button class="btn btn-primary" id="send-btn" onclick="sendMsg()">Send</button>
+    </div>
   </div>`;
   const input=$('msg-input');
   input.onkeypress=e=>{if(e.key==='Enter')sendMsg()};
   input.focus();
-  addMsg('System','Connected! Chat is ephemeral.',false);
+  addMsg('Ghost','Connected. This conversation is private and ephemeral.',false);
 }
 
 async function sendMsg(){
@@ -249,21 +463,21 @@ async function sendMsg(){
   const btn=$('send-btn');
   const text=input.value.trim();
   if(!text)return;
-  if(!S.dc||S.dc.readyState!=='open'){alert('Not connected yet');return;}
+  if(!S.dc||S.dc.readyState!=='open'){alert('Not connected');return;}
   input.value='';
   btn.disabled=true;
   try{
     const msg={nick:S.nick,text,time:Date.now()};
     S.dc.send(await enc(S.key,JSON.stringify(msg)));
     addMsg(S.nick,text,true);
-  }catch(e){console.error(e);alert('Send failed');}
+  }catch(e){console.error(e);}
   finally{btn.disabled=false;input.focus();}
 }
 
 function addMsg(nick,text,self){
   const div=document.createElement('div');
-  div.className='msg'+(self?' self':'');
-  div.innerHTML=`<div class="nick">${nick}</div><div class="text">${text}</div>`;
+  div.className='message '+(self?'sent':'received');
+  div.innerHTML=`<div class="nick">${nick}</div><div>${text}</div>`;
   const msgs=document.getElementById('messages');
   if(!msgs)return;
   msgs.appendChild(div);
